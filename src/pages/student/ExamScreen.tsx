@@ -15,7 +15,7 @@ import {
   ChevronRight,
   Car,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/db';
 import type { Question, Series } from '@/types';
 
 type ExamPhase = 'loading' | 'exam' | 'results';
@@ -57,35 +57,29 @@ export default function ExamScreen() {
   useEffect(() => {
     if (!seriesId) return;
     async function loadData() {
-      const [{ data: seriesData, error: seriesErr }, { data: qData, error: qErr }] =
-        await Promise.all([
-          supabase.from('series').select('*').eq('id', seriesId).maybeSingle(),
-          supabase
-            .from('questions')
-            .select('*')
-            .eq('series_id', seriesId)
-            .order('created_at', { ascending: true }),
-        ]);
-
-      if (seriesErr || qErr) {
+      const [seriesRes, questionsRes] = await Promise.all([
+        api.get<Series>(`/series/${seriesId}`),
+        api.get<Question[]>(`/series/${seriesId}/questions`),
+      ]);
+      if (seriesRes.error || questionsRes.error) {
         setError('Unable to load exam data.');
         setPhase('exam');
         return;
       }
-      if (!seriesData) {
+      if (!seriesRes.data) {
         setError('Series not found.');
         setPhase('exam');
         return;
       }
+      const qData = questionsRes.data;
       if (!qData || qData.length === 0) {
         setError('This series has no questions yet.');
         setPhase('exam');
         return;
       }
-
-      setSeries(seriesData as Series);
-      setQuestions(qData as Question[]);
-      setTimeLeft((qData[0] as Question).timer_duration);
+      setSeries({ ...seriesRes.data, is_active: !!seriesRes.data.is_active });
+      setQuestions(qData);
+      setTimeLeft(qData[0].timer_duration);
       setPhase('exam');
     }
     loadData();

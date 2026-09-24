@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/db';
 import type { Series } from '@/types';
 
 interface Props {
@@ -44,17 +44,14 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
       category,
     };
 
-    let err;
+    let res;
     if (series) {
-      const res = await supabase.from('series').update(payload).eq('id', series.id);
-      err = res.error;
+      res = await api.put<Series>(`/series/${series.id}`, payload);
     } else {
-      const res = await supabase.from('series').insert(payload);
-      err = res.error;
+      res = await api.post<Series>('/series', payload);
     }
-
-    if (err) {
-      setError(err.message);
+    if (res.error) {
+      setError(res.error.message);
       setSaving(false);
       return;
     }

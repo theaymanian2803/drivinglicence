@@ -15,7 +15,6 @@
   "dependencies": {
     "@hono/node-server": "^2.1.1",
     "@libsql/client": "^0.18.0",
-    "@supabase/supabase-js": "^2.57.4",
     "bcryptjs": "^3.0.3",
     "hono": "^4.13.8",
     "jose": "^6.2.12",

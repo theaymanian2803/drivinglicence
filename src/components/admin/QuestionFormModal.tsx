@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Loader2, AlertCircle, Image as ImageIcon, Music, Check } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/db';
 import type { Question } from '@/types';
 
 interface Props {
@@ -123,17 +123,14 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
       category,
     };
 
-    let err;
+    let res;
     if (question) {
-      const res = await supabase.from('questions').update(payload).eq('id', question.id);
-      err = res.error;
+      res = await api.put<Question>(`/questions/${question.id}`, payload);
     } else {
-      const res = await supabase.from('questions').insert(payload);
-      err = res.error;
+      res = await api.post<Question>('/questions', payload);
     }
-
-    if (err) {
-      setError(err.message);
+    if (res.error) {
+      setError(res.error.message);
       setSaving(false);
       return;
     }

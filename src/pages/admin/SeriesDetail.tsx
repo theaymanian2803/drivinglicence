@@ -13,7 +13,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/db';
 import type { Question, Series } from '@/types';
 import QuestionFormModal from '@/components/admin/QuestionFormModal';
 
@@ -30,23 +30,17 @@ export default function SeriesDetail() {
   async function loadData() {
     if (!seriesId) return;
     setLoading(true);
-    const [{ data: sData, error: sErr }, { data: qData, error: qErr }] = await Promise.all([
-      supabase.from('series').select('*').eq('id', seriesId).maybeSingle(),
-      supabase
-        .from('questions')
-        .select('*')
-        .eq('series_id', seriesId)
-        .order('created_at', { ascending: true }),
+    const [seriesRes, questionsRes] = await Promise.all([
+      api.get<Series>(`/series/${seriesId}`),
+      api.get<Question[]>(`/series/${seriesId}/questions`),
     ]);
-
-    if (sErr || qErr || !sData) {
+    if (seriesRes.error || questionsRes.error || !seriesRes.data) {
       setError('Unable to load series details.');
       setLoading(false);
       return;
     }
-
-    setSeries(sData as Series);
-    setQuestions((qData ?? []) as Question[]);
+    setSeries({ ...seriesRes.data, is_active: !!seriesRes.data.is_active });
+    setQuestions(questionsRes.data ?? []);
     setLoading(false);
   }
 
@@ -57,8 +51,8 @@ export default function SeriesDetail() {
 
   async function handleDelete() {
     if (!deleteConfirm) return;
-    const { error: err } = await supabase.from('questions').delete().eq('id', deleteConfirm.id);
-    if (err) {
+    const res = await api.del(`/questions/${deleteConfirm.id}`);
+    if (res.error) {
       setError('Failed to delete question.');
     } else {
       setDeleteConfirm(null);
@@ -67,22 +61,16 @@ export default function SeriesDetail() {
   }
 
   async function moveQuestion(q: Question, direction: 'up' | 'down') {
-    // Simple reorder: swap created_at timestamps with adjacent question
     const idx = questions.findIndex((item) => item.id === q.id);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= questions.length) return;
-
-    const swapQ = questions[swapIdx];
-    await Promise.all([
-      supabase
-        .from('questions')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', q.id),
-      supabase
-        .from('questions')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', swapQ.id),
-    ]);
+    const reordered = [...questions];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    const res = await api.patch('/questions/reorder', { ids: reordered.map((item) => item.id) });
+    if (res.error) {
+      setError('Failed to reorder questions.');
+      return;
+    }
     loadData();
   }
 

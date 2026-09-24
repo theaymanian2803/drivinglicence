@@ -14,14 +14,12 @@ import {
   LogOut,
   ArrowLeft,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/db';
 import { useAuth } from '@/context/AuthContext';
 import type { Series } from '@/types';
 import SeriesFormModal from '@/components/admin/SeriesFormModal';
 
-interface SeriesWithCount extends Series {
-  questionCount: number;
-}
+type SeriesWithCount = import('@/types').SeriesWithCount & { questionCount: number };
 
 export default function AdminDashboard() {
   const { signOut } = useAuth();
@@ -34,28 +32,14 @@ export default function AdminDashboard() {
 
   async function loadSeries() {
     setLoading(true);
-    const { data, error: err } = await supabase
-      .from('series')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (err) {
+    const res = await api.get<SeriesWithCount[]>('/series?all=true');
+    if (res.error) {
       setError('Unable to load series.');
       setLoading(false);
       return;
     }
-
-    const withCounts = await Promise.all(
-      (data ?? []).map(async (s) => {
-        const { count } = await supabase
-          .from('questions')
-          .select('*', { count: 'exact', head: true })
-          .eq('series_id', s.id);
-        return { ...s, questionCount: count ?? 0 };
-      })
-    );
-
-    setSeries(withCounts as SeriesWithCount[]);
+    const withCounts = res.data.map((s) => ({ ...s, questionCount: s.question_count }));
+    setSeries(withCounts);
     setLoading(false);
   }
 
@@ -65,8 +49,8 @@ export default function AdminDashboard() {
 
   async function handleDelete() {
     if (!deleteConfirm) return;
-    const { error: err } = await supabase.from('series').delete().eq('id', deleteConfirm.id);
-    if (err) {
+    const res = await api.del(`/series/${deleteConfirm.id}`);
+    if (res.error) {
       setError('Failed to delete series.');
     } else {
       setDeleteConfirm(null);
@@ -75,7 +59,12 @@ export default function AdminDashboard() {
   }
 
   async function toggleActive(s: Series) {
-    await supabase.from('series').update({ is_active: !s.is_active }).eq('id', s.id);
+    await api.put(`/series/${s.id}`, {
+      title: s.title,
+      description: s.description,
+      is_active: !s.is_active,
+      category: s.category,
+    });
     loadSeries();
   }
 

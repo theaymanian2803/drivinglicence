@@ -1,40 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Car, ChevronRight, Clock, FileQuestion, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import type { Series } from '@/types';
+import { api } from '@/lib/db';
+import type { SeriesWithCount } from '@/types';
 
 export default function SeriesSelection() {
-  const [series, setSeries] = useState<Series[]>([]);
+  const [series, setSeries] = useState<SeriesWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadSeries() {
-      const { data, error: err } = await supabase
-        .from('series')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: true });
-
-      if (err) {
+      const res = await api.get<SeriesWithCount[]>('/series');
+      if (res.error) {
         setError('Unable to load exam series. Please try again later.');
         setLoading(false);
         return;
       }
-
-      // Fetch question counts per series
-      const seriesWithCounts = await Promise.all(
-        (data ?? []).map(async (s) => {
-          const { count } = await supabase
-            .from('questions')
-            .select('*', { count: 'exact', head: true })
-            .eq('series_id', s.id);
-          return { ...s, questionCount: count ?? 0 };
-        })
-      );
-
-      setSeries(seriesWithCounts as (Series & { questionCount: number })[]);
+      setSeries(res.data);
       setLoading(false);
     }
     loadSeries();
@@ -97,7 +80,7 @@ export default function SeriesSelection() {
         {!loading && !error && series.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {series.map((s) => {
-              const questionCount = (s as Series & { questionCount: number }).questionCount;
+              const questionCount = s.question_count;
               return (
                 <Link
                   key={s.id}
