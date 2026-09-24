@@ -122,6 +122,7 @@ All JSON. Write endpoints return 401 without a valid JWT cookie.
 - `GET  /api/auth/me` → {user} | 401 (used by AuthContext on load)
 - `GET  /api/series` → active series + `question_count` (single JOIN query). `?all=true`
   (admin session) returns inactive too.
+- `GET  /api/series/:id` → single series (public; used by exam screen and admin detail)
 - `POST /api/series` — create (admin)
 - `PUT  /api/series/:id` — update (admin)
 - `DELETE /api/series/:id` — delete, cascades to questions (admin)
@@ -169,7 +170,7 @@ Vite no longer needs `VITE_*` Supabase vars; the old `.env` Supabase keys are re
 
 Removed: `@supabase/supabase-js`.
 
-Added (dependencies): `hono`, `@libsql/client`, `bcryptjs`, `jose`.
+Added (dependencies): `hono`, `@hono/node-server`, `@libsql/client`, `bcryptjs`, `jose`.
 Added (devDependencies): `tsx`, `concurrently`, `@types/node`, `@types/bcryptjs`.
 
 Root scripts:
