@@ -58,5 +58,4 @@ TURSO_DATABASE_URL=libsql://<db>.turso.io
 TURSO_AUTH_TOKEN=<token>
 ```
 
-Set `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`JWT_SECRET` in `.env` too; the server reads them via
-`loadEnv([])`.
+Set `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`JWT_SECRET` in `.env` too — `server/env.ts` loads `.env` at boot (shell env vars take precedence).
