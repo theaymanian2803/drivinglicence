@@ -51,3 +51,9 @@ export interface SeriesInput {
 export interface SeriesWithCount extends Series {
   question_count: number;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}

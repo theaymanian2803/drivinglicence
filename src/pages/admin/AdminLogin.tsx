@@ -4,9 +4,8 @@ import { Car, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLogin() {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +16,7 @@ export default function AdminLogin() {
     setError(null);
     setLoading(true);
 
-    const result = mode === 'login' ? await signIn(email, password) : await signUp(email, password);
+    const result = await signIn(email, password);
 
     if (result.error) {
       setError(result.error);
@@ -25,16 +24,6 @@ export default function AdminLogin() {
       return;
     }
 
-    if (mode === 'signup') {
-      // After signup, try to sign in immediately
-      const signInResult = await signIn(email, password);
-      if (signInResult.error) {
-        setError('Account created. Please sign in.');
-        setMode('login');
-        setLoading(false);
-        return;
-      }
-    }
     navigate('/admin/dashboard');
   };
 
@@ -52,25 +41,6 @@ export default function AdminLogin() {
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
-            <button
-              onClick={() => setMode('login')}
-              className={`flex-1 py-2.5 rounded-lg font-medium text-sm transition-all ${
-                mode === 'login' ? 'bg-white text-primary-700 shadow-sm' : 'text-slate-500'
-              }`}
-            >
-              Connexion
-            </button>
-            <button
-              onClick={() => setMode('signup')}
-              className={`flex-1 py-2.5 rounded-lg font-medium text-sm transition-all ${
-                mode === 'signup' ? 'bg-white text-primary-700 shadow-sm' : 'text-slate-500'
-              }`}
-            >
-              Inscription
-            </button>
-          </div>
-
           {error && (
             <div className="mb-4 flex items-center gap-2 bg-error-50 border border-error-200 text-error-700 rounded-lg p-3 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -118,10 +88,8 @@ export default function AdminLogin() {
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
-              ) : mode === 'login' ? (
-                'Se connecter'
               ) : (
-                'Créer un compte'
+                'Se connecter'
               )}
             </button>
           </form>
