@@ -47,3 +47,7 @@ export interface SeriesInput {
   is_active: boolean;
   category: string;
 }
+
+export interface SeriesWithCount extends Series {
+  question_count: number;
+}
