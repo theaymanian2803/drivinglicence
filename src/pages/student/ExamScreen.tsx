@@ -386,7 +386,6 @@ export default function ExamScreen() {
     { num: 3, text: currentQuestion?.option_3 },
     { num: 4, text: currentQuestion?.option_4 },
   ].filter((o) => o.text);
-  const options = [...optionsGroup1, ...optionsGroup2];
 
   const timerColor =
     timeLeft <= 5

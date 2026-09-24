@@ -310,7 +310,7 @@ Create `server/auth.ts`:
 
 ```ts
 import { SignJWT, jwtVerify } from 'jose';
-import bcrypt from 'bcryptjs';
+import { hash, compare } from 'bcryptjs';
 import { getCookie } from 'hono/cookie';
 import type { Context } from 'hono';
 
@@ -328,11 +328,11 @@ const jwtSecret = new TextEncoder().encode(
 );
 
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+  return hash(password, 10);
 }
 
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
+export async function verifyPassword(password: string, passwordHash: string): Promise<boolean> {
+  return compare(password, passwordHash);
 }
 
 export async function signToken(user: AuthUser): Promise<string> {
