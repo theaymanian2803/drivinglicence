@@ -10,6 +10,7 @@ import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminStudents from '@/pages/admin/AdminStudents';
 import SeriesDetail from '@/pages/admin/SeriesDetail';
+import AdminSigns from '@/pages/admin/AdminSigns';
 import Landing from '@/pages/Landing';
 import Signs from '@/pages/student/Signs';
 import { useSitePublic } from '@/lib/settings';
@@ -136,6 +137,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SeriesDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/signs"
+        element={
+          <ProtectedRoute>
+            <AdminSigns />
           </ProtectedRoute>
         }
       />
