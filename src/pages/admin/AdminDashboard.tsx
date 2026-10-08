@@ -14,6 +14,8 @@ import {
   LogOut,
   ArrowLeft,
   Users,
+  Signpost,
+  Globe,
 } from 'lucide-react';
 import { api } from '@/lib/db';
 import { useAuth } from '@/context/AuthContext';
@@ -30,6 +32,19 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingSeries, setEditingSeries] = useState<Series | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Series | null>(null);
+  const [sitePublic, setSitePublic] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    api.get<{ site_public: boolean }>('/settings/public').then((res) => {
+      if (!res.error) setSitePublic(res.data?.site_public ?? false);
+    });
+  }, []);
+
+  async function togglePublic() {
+    const next = !sitePublic;
+    const res = await api.put('/settings', { site_public: next });
+    if (!res.error) setSitePublic(next);
+  }
 
   async function loadSeries() {
     setLoading(true);
@@ -94,6 +109,13 @@ export default function AdminDashboard() {
               <span className="hidden sm:inline">Students</span>
             </Link>
             <Link
+              to="/admin/signs"
+              className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
+            >
+              <Signpost className="w-4 h-4" />
+              <span className="hidden sm:inline">Panneaux</span>
+            </Link>
+            <Link
               to="/"
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             >
@@ -112,6 +134,37 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
+              <Globe className="w-5 h-5 text-primary-600" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900">Mode public</p>
+              <p className="text-sm text-slate-500">
+                {sitePublic
+                  ? 'La page d’accueil et les panneaux sont visibles sans connexion.'
+                  : 'Seuls les élèves connectés voient la page d’accueil et les panneaux.'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={togglePublic}
+            disabled={sitePublic === null}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors disabled:opacity-50 ${
+              sitePublic ? 'bg-success-500' : 'bg-slate-300'
+            }`}
+            aria-pressed={sitePublic ?? false}
+            title={sitePublic ? 'Désactiver le mode public' : 'Activer le mode public'}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${
+                sitePublic ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
         {/* Section header */}
         <div className="flex items-center justify-between mb-6">
           <div>
