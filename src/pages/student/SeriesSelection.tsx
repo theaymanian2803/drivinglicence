@@ -6,16 +6,21 @@ import {
   FileQuestion,
   Loader2,
   Lock,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
 } from 'lucide-react';
 import { api } from '@/lib/db';
 import SiteHeader from '@/components/SiteHeader';
-import type { RevisionSummary, SeriesWithCount } from '@/types';
+import type { OfficialExamMeta, Readiness, RevisionSummary, SeriesWithCount } from '@/types';
 
 export default function SeriesSelection() {
   const [series, setSeries] = useState<SeriesWithCount[]>([]);
   const [toReviewCount, setToReviewCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [officialMeta, setOfficialMeta] = useState<OfficialExamMeta | null>(null);
+  const [readiness, setReadiness] = useState<Readiness | null>(null);
 
   useEffect(() => {
     async function loadSeries() {
@@ -32,6 +37,12 @@ export default function SeriesSelection() {
     api.get<RevisionSummary>('/revision').then((res) => {
       if (!res.error) setToReviewCount(res.data.to_review.length);
     });
+    api.get<OfficialExamMeta>('/exams/official/meta').then((res) => {
+      if (!res.error) setOfficialMeta(res.data);
+    });
+    api.get<Readiness>('/readiness').then((res) => {
+      if (!res.error) setReadiness(res.data);
+    });
   }, []);
 
   return (
@@ -46,6 +57,94 @@ export default function SeriesSelection() {
             Sélectionnez une série d'examens pour commencer votre test. Chaque série contient des
             questions avec un chronomètre et des scénarios routiers.
           </p>
+        </div>
+
+        {/* Official exam + readiness */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          {officialMeta && (
+            <Link
+              to="/exam/official"
+              className="lg:col-span-2 group bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 animate-fade-in"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Trophy className="w-7 h-7 text-white" />
+                </div>
+                <span className="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
+                  OFFICIEL
+                </span>
+              </div>
+              <h3 className="text-xl font-bold mb-1">Examen officiel</h3>
+              <p className="text-white/80 text-sm mb-4">
+                {officialMeta.question_count} questions tirées de toute la banque · Score
+                minimum {officialMeta.pass_score}/{officialMeta.question_count} · {officialMeta.timer_duration}s / question
+              </p>
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                Commencer la simulation
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          )}
+
+          {readiness && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 animate-fade-in">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 bg-success-50 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-success-600" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Prêt pour l'examen</p>
+                  <p className="text-xs text-slate-500">
+                    Basé sur tes {readiness.attempts_count > 0 ? 'dernières tentatives' : 'résultats'} et ta révision
+                  </p>
+                </div>
+                {readiness.trend !== 'flat' && (
+                  <span
+                    className={`ml-auto flex items-center gap-1 text-xs font-semibold ${
+                      readiness.trend === 'up' ? 'text-success-600' : 'text-error-600'
+                    }`}
+                  >
+                    {readiness.trend === 'up' ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                    {readiness.trend === 'up' ? 'En hausse' : 'En baisse'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 mb-3">
+                <span className="text-4xl font-extrabold text-slate-900 tabular-nums">
+                  {readiness.readiness_pct}%
+                </span>
+                <div className="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      readiness.readiness_pct >= 70
+                        ? 'bg-success-500'
+                        : readiness.readiness_pct >= 40
+                        ? 'bg-warning-500'
+                        : 'bg-error-500'
+                    }`}
+                    style={{ width: `${readiness.readiness_pct}%` }}
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">
+                {readiness.readiness_pct >= 70
+                  ? 'Prêt — tu as toutes les chances de réussir.'
+                  : readiness.readiness_pct >= 40
+                  ? 'Bien parti — continue les séries et la révision.'
+                  : 'En route — entraîne-toi encore avant l’examen officiel.'}
+                {readiness.to_review > 0 && (
+                  <span className="mt-1 block text-xs text-warning-600">
+                    {readiness.to_review} question{readiness.to_review > 1 ? 's' : ''} à revoir
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
         {loading && (
