@@ -12,6 +12,7 @@ import { uploadRoutes } from './routes/upload';
 import { signRoutes } from './routes/signs';
 import { settingsRoutes } from './routes/settings';
 import { examRoutes } from './routes/exams';
+import { readinessRoutes } from './routes/readiness';
 import { init } from './db';
 import type { AppEnv } from './auth';
 
@@ -29,6 +30,7 @@ app.route('/api/upload', uploadRoutes);
 app.route('/api/signs', signRoutes);
 app.route('/api/settings', settingsRoutes);
 app.route('/api/exams', examRoutes);
+app.route('/api/readiness', readinessRoutes);
 
 const port = Number(process.env.PORT ?? 3001);
 
