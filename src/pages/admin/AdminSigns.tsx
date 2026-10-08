@@ -39,7 +39,6 @@ export default function AdminSigns() {
 
   useEffect(() => {
     loadSigns();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function toggleActive(s: TrafficSign) {

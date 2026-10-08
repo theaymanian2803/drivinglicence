@@ -78,25 +78,29 @@ export default function SiteHeader({ title, subtitle, revisionCount = null }: Si
               <span>Connexion</span>
             </Link>
           )}
-          <div className="hidden lg:flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-slate-100 border border-slate-200">
-            <span className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              {isAdmin ? (
-                <Shield className="w-4 h-4 text-white" />
-              ) : (
-                <User className="w-4 h-4 text-white" />
-              )}
-            </span>
-            <span className="text-sm font-medium text-slate-700 pr-1 max-w-[10rem] truncate">
-              {isAdmin ? 'Admin' : user?.name ?? user?.email}
-            </span>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-error-600 transition-colors px-3 py-2 rounded-lg hover:bg-error-50"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Déconnexion</span>
-          </button>
+          {user && (
+            <div className="hidden lg:flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-slate-100 border border-slate-200">
+              <span className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                {isAdmin ? (
+                  <Shield className="w-4 h-4 text-white" />
+                ) : (
+                  <User className="w-4 h-4 text-white" />
+                )}
+              </span>
+              <span className="text-sm font-medium text-slate-700 pr-1 max-w-[10rem] truncate">
+                {isAdmin ? 'Admin' : user?.name ?? user?.email}
+              </span>
+            </div>
+          )}
+          {user && (
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-error-600 transition-colors px-3 py-2 rounded-lg hover:bg-error-50"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Déconnexion</span>
+            </button>
+          )}
         </div>
       </div>
 

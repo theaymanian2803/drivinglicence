@@ -2,15 +2,32 @@ import { Hono } from 'hono';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db';
 import type { AppEnv } from '../auth';
-import { requireAdmin, requireUser } from '../middleware';
+import { requireAdmin, requireUser, optionalUser } from '../middleware';
 import { toSeries, toQuestion } from '../serialize';
 import type { SeriesInput } from '../../src/types';
 
 export const seriesRoutes = new Hono<AppEnv>();
 
-seriesRoutes.get('/', requireUser, async (c) => {
-  const user = c.get('user');
-  const includeAll = c.req.query('all') === 'true' && user.role === 'admin';
+seriesRoutes.get('/', optionalUser, async (c) => {
+  const user = c.get('user') as import('../auth').AuthUser | undefined;
+  const includeAll = c.req.query('all') === 'true' && user?.role === 'admin';
+  if (!user) {
+    const settings = await db.execute({
+      sql: 'SELECT value FROM settings WHERE key = ?',
+      args: ['site_public'],
+    });
+    const isPublic = settings.rows[0]
+      ? String((settings.rows[0] as Record<string, unknown>).value) === '1'
+      : false;
+    if (!isPublic) return c.json({ error: 'Unauthorized' }, 401);
+    const active = await db.execute(
+      `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
+       FROM series s
+       WHERE s.is_active = 1
+       ORDER BY s.created_at ASC`
+    );
+    return c.json({ data: active.rows.map((r) => toSeries(r as Record<string, unknown>)) });
+  }
   const result = await db.execute(
     `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
      FROM series s

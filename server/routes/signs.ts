@@ -29,7 +29,12 @@ signRoutes.get('/:id', optionalUser, async (c) => {
   if (!id) return c.json({ error: 'Invalid sign id' }, 400);
   const result = await db.execute({ sql: 'SELECT * FROM signs WHERE id = ?', args: [id] });
   if (result.rows.length === 0) return c.json({ error: 'Sign not found' }, 404);
-  return c.json({ data: toSign(result.rows[0] as Record<string, unknown>) });
+  const row = result.rows[0] as Record<string, unknown>;
+  const user = c.get('user') as import('../auth').AuthUser | undefined;
+  if (user?.role !== 'admin' && Number(row.is_active) !== 1) {
+    return c.json({ error: 'Sign not found' }, 404);
+  }
+  return c.json({ data: toSign(row) });
 });
 
 signRoutes.patch('/reorder', requireAdmin, async (c) => {
