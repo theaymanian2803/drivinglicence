@@ -10,6 +10,9 @@ import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminStudents from '@/pages/admin/AdminStudents';
 import SeriesDetail from '@/pages/admin/SeriesDetail';
+import Landing from '@/pages/Landing';
+import Signs from '@/pages/student/Signs';
+import { useSitePublic } from '@/lib/settings';
 import type { ReactNode } from 'react';
 
 function LoadingScreen() {
@@ -44,17 +47,37 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function LandingOrSeries() {
+  const { user, loading } = useAuth();
+  const isPublic = useSitePublic();
+
+  if (loading || isPublic === null) return <LoadingScreen />;
+  if (user) return <SeriesSelection />;
+  if (isPublic) return <Landing />;
+  return <Navigate to="/login" replace />;
+}
+
+function SignsGate({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const isPublic = useSitePublic();
+
+  if (loading || isPublic === null) return <LoadingScreen />;
+  if (user || isPublic) return <>{children}</>;
+  return <Navigate to="/login" replace />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
       {/* Student routes */}
       <Route path="/login" element={<StudentLogin />} />
+      <Route path="/" element={<LandingOrSeries />} />
       <Route
-        path="/"
+        path="/signs"
         element={
-          <StudentRoute>
-            <SeriesSelection />
-          </StudentRoute>
+          <SignsGate>
+            <Signs />
+          </SignsGate>
         }
       />
       <Route
