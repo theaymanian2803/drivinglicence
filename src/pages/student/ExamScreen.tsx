@@ -17,7 +17,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { api } from '@/lib/db';
-import type { CompleteRevisionResult, Question, RevisionSummary, Series } from '@/types';
+import type { CompleteRevisionResult, OfficialExamStart, Question, RevisionSummary, Series } from '@/types';
 
 type ExamPhase = 'loading' | 'exam' | 'results';
 type Feedback = 'none' | 'correct' | 'wrong' | 'timeout';
@@ -31,9 +31,10 @@ interface ExamResult {
 
 interface ExamScreenProps {
   revisionMode?: boolean;
+  officialMode?: boolean;
 }
 
-export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
+export default function ExamScreen({ revisionMode = false, officialMode = false }: ExamScreenProps) {
   const { seriesId } = useParams<{ seriesId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -82,6 +83,17 @@ export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
       return;
     }
 
+    if (officialMode) {
+      api.post('/exams/official/complete', {
+        score,
+        total_questions: questions.length,
+        wrong_question_ids: results
+          .filter((r) => !r.correct)
+          .map((r) => r.question.id),
+      });
+      return;
+    }
+
     if (!series?.id) return;
     api.post('/attempts', {
       series_id: series.id,
@@ -92,7 +104,7 @@ export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
         .map((r) => r.question.id),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, revisionMode, series?.id, results.length, questions.length]);
+  }, [phase, revisionMode, officialMode, series?.id, results.length, questions.length]);
 
   // ===== Load data (normal mode fetches the series; revision uses passed questions) =====
   useEffect(() => {
@@ -117,6 +129,35 @@ export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
         });
         setQuestions(qData);
         setTimeLeft(qData[0].timer_duration);
+        setPhase('exam');
+        return;
+      }
+
+      if (officialMode) {
+        const res = await api.get<OfficialExamStart>('/exams/official');
+        if (res.error) {
+          setError("Impossible de charger l'examen officiel.");
+          setPhase('exam');
+          return;
+        }
+        const data = res.data;
+        setSeries({
+          id: 'official',
+          title: 'Examen officiel',
+          description: data.question_count + ' questions tirées de toute la banque',
+          is_active: true,
+          category: 'Officiel',
+          pass_score: data.pass_score,
+          required_questions: data.question_count,
+          created_at: '',
+          updated_at: '',
+        });
+        const qData = data.questions.map((q) => ({
+          ...q,
+          timer_duration: data.timer_duration as Question['timer_duration'],
+        }));
+        setQuestions(qData);
+        setTimeLeft(data.timer_duration);
         setPhase('exam');
         return;
       }
@@ -149,7 +190,7 @@ export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
     }
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revisionMode, seriesId]);
+  }, [revisionMode, officialMode, seriesId]);
 
   // ===== Stop audio =====
   const stopAudio = useCallback(() => {
