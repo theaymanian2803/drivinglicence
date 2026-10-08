@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, Car, History, LogOut, Shield, User } from 'lucide-react';
+import { BookOpen, Car, History, LogOut, Shield, Signpost, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 interface SiteHeaderProps {
@@ -49,6 +49,10 @@ export default function SiteHeader({ title, subtitle, revisionCount = null }: Si
               </span>
             )}
           </NavLink>
+          <NavLink to="/signs" className={navClass} relative="path">
+            <Signpost className="w-4 h-4" />
+            <span>Panneaux</span>
+          </NavLink>
           <NavLink to="/history" className={navClass} relative="path">
             <History className="w-4 h-4" />
             <span>Mes résultats</span>
@@ -65,6 +69,15 @@ export default function SiteHeader({ title, subtitle, revisionCount = null }: Si
         </nav>
 
         <div className="flex items-center gap-2 shrink-0">
+          {!user && (
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors px-3 py-2 rounded-lg hover:bg-primary-50"
+            >
+              <User className="w-4 h-4" />
+              <span>Connexion</span>
+            </Link>
+          )}
           <div className="hidden lg:flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-slate-100 border border-slate-200">
             <span className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
               {isAdmin ? (
@@ -96,6 +109,10 @@ export default function SiteHeader({ title, subtitle, revisionCount = null }: Si
               {revisionCount}
             </span>
           )}
+        </NavLink>
+        <NavLink to="/signs" className={navClass} relative="path">
+          <Signpost className="w-4 h-4" />
+          <span>Panneaux</span>
         </NavLink>
         <NavLink to="/history" className={navClass} relative="path">
           <History className="w-4 h-4" />
