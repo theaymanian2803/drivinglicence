@@ -140,3 +140,25 @@ export interface SignInput {
   scenario_image_url: string | null;
   is_active: boolean;
 }
+
+export type OfficialExamMeta = {
+  pass_score: number;
+  question_count: number;
+  timer_duration: number;
+};
+
+export type OfficialExamStart = OfficialExamMeta & {
+  questions: Question[];
+};
+
+export type ReadyTrend = 'up' | 'down' | 'flat';
+
+export interface Readiness {
+  readiness_pct: number;
+  attempts_pass_rate: number;
+  revision_clearance: number;
+  trend: ReadyTrend;
+  attempts_count: number;
+  to_review: number;
+  corrected: number;
+}
