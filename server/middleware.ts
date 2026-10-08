@@ -11,6 +11,14 @@ export async function requireUser(c: Context, next: Next) {
   await next();
 }
 
+export async function optionalUser(c: Context, next: Next) {
+  const user = await getAuthUser(c);
+  if (user) {
+    c.set('user', user);
+  }
+  await next();
+}
+
 export async function requireAdmin(c: Context, next: Next) {
   const user = await getAuthUser(c);
   if (!user) {
