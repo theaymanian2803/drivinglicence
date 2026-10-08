@@ -7,4 +7,3 @@ local.db
 *.db-wal
 *.db-shm
 .env
-scripts
