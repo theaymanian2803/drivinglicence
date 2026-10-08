@@ -28,10 +28,11 @@ seriesRoutes.get('/', optionalUser, async (c) => {
     );
     return c.json({ data: active.rows.map((r) => toSeries(r as Record<string, unknown>)) });
   }
+  const where = includeAll ? 'WHERE s.is_official = 0' : 'WHERE s.is_active = 1 AND s.is_official = 0';
   const result = await db.execute(
     `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
      FROM series s
-     ${includeAll ? '' : 'WHERE s.is_active = 1'}
+     ${where}
      ORDER BY s.created_at ASC`
   );
   return c.json({ data: result.rows.map((r) => toSeries(r as Record<string, unknown>)) });
