@@ -13,16 +13,22 @@ export interface OfficialConfig {
   timer_duration: number;
 }
 
-async function readSetting(key: string, fallback: string): Promise<string> {
-  const res = await db.execute({ sql: 'SELECT value FROM settings WHERE key = ?', args: [key] });
-  return res.rows[0] ? String((res.rows[0] as Record<string, unknown>).value) : fallback;
-}
-
 export async function readOfficialConfig(): Promise<OfficialConfig> {
+  const res = await db.execute({
+    sql: `SELECT key, value FROM settings WHERE key IN ('official_pass_score', 'official_question_count', 'official_timer_duration')`,
+  });
+  const map = new Map<string, string>();
+  for (const r of res.rows) {
+    const row = r as Record<string, unknown>;
+    map.set(String(row.key), String(row.value));
+  }
+  const DEFAULT_TIMERS = [10, 20, 30];
+  let timer = Number(map.get('official_timer_duration') ?? '20');
+  if (!DEFAULT_TIMERS.includes(timer)) timer = 20;
   return {
-    pass_score: Number(await readSetting('official_pass_score', '35')),
-    question_count: Number(await readSetting('official_question_count', '40')),
-    timer_duration: Number(await readSetting('official_timer_duration', '20')),
+    pass_score: Number(map.get('official_pass_score') ?? '35'),
+    question_count: Number(map.get('official_question_count') ?? '40'),
+    timer_duration: timer,
   };
 }
 
@@ -80,14 +86,16 @@ examRoutes.post('/official/complete', requireStudent, async (c) => {
   const id = randomUUID();
   const now = new Date().toISOString();
 
-  const requested = Array.isArray(body.wrong_question_ids)
+  const requested = (Array.isArray(body.wrong_question_ids)
     ? body.wrong_question_ids.filter((q): q is string => typeof q === 'string')
-    : [];
+    : []
+  ).slice(0, config.question_count);
   let wrongIds: string[] = [];
   if (requested.length > 0) {
     const placeholders = requested.map(() => '?').join(',');
     const qres = await db.execute({
-      sql: `SELECT id FROM questions WHERE id IN (${placeholders})`,
+      sql: `SELECT id FROM questions WHERE id IN (${placeholders})
+            AND series_id IN (SELECT id FROM series WHERE is_active = 1 AND is_official = 0)`,
       args: [...requested],
     });
     wrongIds = qres.rows.map((r) => r.id as string);

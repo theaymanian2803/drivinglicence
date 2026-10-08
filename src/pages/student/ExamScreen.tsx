@@ -136,7 +136,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
       if (officialMode) {
         const res = await api.get<OfficialExamStart>('/exams/official');
         if (res.error) {
-          setError("Impossible de charger l'examen officiel.");
+          setError(res.error.message || "Impossible de charger l'examen officiel.");
           setPhase('exam');
           return;
         }
