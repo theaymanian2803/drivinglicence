@@ -23,7 +23,7 @@ seriesRoutes.get('/', optionalUser, async (c) => {
     const active = await db.execute(
       `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
        FROM series s
-       WHERE s.is_active = 1
+       WHERE s.is_active = 1 AND s.is_official = 0
        ORDER BY s.created_at ASC`
     );
     return c.json({ data: active.rows.map((r) => toSeries(r as Record<string, unknown>)) });
