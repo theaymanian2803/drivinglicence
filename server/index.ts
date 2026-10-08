@@ -10,6 +10,7 @@ import { attemptsRoutes } from './routes/attempts';
 import { revisionRoutes } from './routes/revision';
 import { uploadRoutes } from './routes/upload';
 import { signRoutes } from './routes/signs';
+import { settingsRoutes } from './routes/settings';
 import { init } from './db';
 import type { AppEnv } from './auth';
 
@@ -25,6 +26,7 @@ app.route('/api/attempts', attemptsRoutes);
 app.route('/api/revision', revisionRoutes);
 app.route('/api/upload', uploadRoutes);
 app.route('/api/signs', signRoutes);
+app.route('/api/settings', settingsRoutes);
 
 const port = Number(process.env.PORT ?? 3001);
 
