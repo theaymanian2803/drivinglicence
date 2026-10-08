@@ -82,6 +82,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/exam/official"
+        element={
+          <StudentRoute>
+            <ExamScreen officialMode />
+          </StudentRoute>
+        }
+      />
+      <Route
         path="/exam/:seriesId"
         element={
           <StudentRoute>
