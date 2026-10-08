@@ -134,3 +134,31 @@ export function toAttempt(row: Record<string, unknown>): SerializedExamAttempt {
     created_at: row.created_at as string,
   };
 }
+
+export interface SerializedSign {
+  id: string;
+  title: string;
+  category: string;
+  image_url: string;
+  description: string;
+  scenario_image_url: string | null;
+  is_active: number;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toSign(row: Record<string, unknown>): SerializedSign {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    category: row.category as string,
+    image_url: row.image_url as string,
+    description: row.description as string,
+    scenario_image_url: (row.scenario_image_url as string | null) ?? null,
+    is_active: Number(row.is_active),
+    position: Number(row.position),
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+  };
+}

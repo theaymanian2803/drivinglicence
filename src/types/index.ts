@@ -107,3 +107,36 @@ export interface CompleteRevisionResult {
   ok: boolean;
   summary: RevisionSummary;
 }
+
+export const SIGN_CATEGORIES = [
+  'Danger',
+  'Interdiction',
+  'Obligation',
+  'Indication',
+  'Précédence',
+  'Signalisation temporaire',
+] as const;
+
+export type SignCategory = (typeof SIGN_CATEGORIES)[number];
+
+export interface TrafficSign {
+  id: string;
+  title: string;
+  category: string;
+  image_url: string;
+  description: string;
+  scenario_image_url: string | null;
+  is_active: boolean;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SignInput {
+  title: string;
+  category: string;
+  image_url: string;
+  description: string;
+  scenario_image_url: string | null;
+  is_active: boolean;
+}
