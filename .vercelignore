@@ -1,0 +1,10 @@
+.superpowers
+docs
+node_modules
+dist
+local.db
+*.db
+*.db-wal
+*.db-shm
+.env
+scripts
