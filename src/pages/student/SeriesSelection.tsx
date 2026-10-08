@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Car, ChevronRight, Clock, FileQuestion, Loader2 } from 'lucide-react';
+import {
+  ChevronRight,
+  Clock,
+  FileQuestion,
+  Loader2,
+  Lock,
+} from 'lucide-react';
 import { api } from '@/lib/db';
-import type { SeriesWithCount } from '@/types';
+import SiteHeader from '@/components/SiteHeader';
+import type { RevisionSummary, SeriesWithCount } from '@/types';
 
 export default function SeriesSelection() {
   const [series, setSeries] = useState<SeriesWithCount[]>([]);
+  const [toReviewCount, setToReviewCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,30 +29,14 @@ export default function SeriesSelection() {
       setLoading(false);
     }
     loadSeries();
+    api.get<RevisionSummary>('/revision').then((res) => {
+      if (!res.error) setToReviewCount(res.data.to_review.length);
+    });
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-primary-600 rounded-xl flex items-center justify-center shadow-md">
-              <Car className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">Code de la Route</h1>
-              <p className="text-sm text-slate-500">Catégorie B — Maroc</p>
-            </div>
-          </div>
-          <Link
-            to="/admin"
-            className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-primary-50"
-          >
-            Admin
-          </Link>
-        </div>
-      </header>
+      <SiteHeader title="Code de la Route" subtitle="Catégorie B — Maroc" revisionCount={toReviewCount} />
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -81,12 +73,12 @@ export default function SeriesSelection() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {series.map((s) => {
               const questionCount = s.question_count;
-              return (
-                <Link
-                  key={s.id}
-                  to={`/exam/${s.id}`}
-                  className="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-primary-300 hover:shadow-xl transition-all duration-300 animate-fade-in"
-                >
+              const incomplete =
+                s.required_questions > 0 && (questionCount ?? 0) < s.required_questions;
+              const requiredLabel =
+                s.required_questions > 0 ? `${s.required_questions}` : null;
+              const cardInner = (
+                <>
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                       <FileQuestion className="w-7 h-7 text-white" />
@@ -105,15 +97,46 @@ export default function SeriesSelection() {
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <FileQuestion className="w-4 h-4" />
-                        {questionCount} questions
+                        {questionCount}/{requiredLabel ?? '∞'} questions
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Clock className="w-4 h-4" />
                         ~{Math.ceil((questionCount * 20) / 60)} min
                       </span>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
+                    {incomplete ? (
+                      <Lock className="w-5 h-5 text-slate-300" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
+                    )}
                   </div>
+                </>
+              );
+              if (incomplete) {
+                return (
+                  <div
+                    key={s.id}
+                    className="group bg-white rounded-2xl border border-slate-200 p-6 opacity-70 cursor-not-allowed select-none animate-fade-in"
+                    title={`Série incomplète — ${questionCount}/${requiredLabel ?? '?'} questions`}
+                  >
+                    {cardInner}
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-center gap-2 text-sm font-medium text-slate-400">
+                      <Lock className="w-4 h-4" />
+                      <span>
+                        Incomplète ({questionCount}/{requiredLabel} questions) — En cours de
+                        préparation
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <Link
+                  key={s.id}
+                  to={`/exam/${s.id}`}
+                  className="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-primary-300 hover:shadow-xl transition-all duration-300 animate-fade-in"
+                >
+                  {cardInner}
                 </Link>
               );
             })}

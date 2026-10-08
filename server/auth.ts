@@ -1,11 +1,14 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { hash, compare } from 'bcryptjs';
-import { getCookie } from 'hono/cookie';
+import { getCookie, setCookie } from 'hono/cookie';
 import type { Context } from 'hono';
+
+export type UserRole = 'admin' | 'student';
 
 export interface AuthUser {
   id: string;
   email: string;
+  role: UserRole;
 }
 
 export type AppEnv = {
@@ -25,7 +28,7 @@ export async function verifyPassword(password: string, passwordHash: string): Pr
 }
 
 export async function signToken(user: AuthUser): Promise<string> {
-  return new SignJWT({ email: user.email })
+  return new SignJWT({ email: user.email, role: user.role })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(user.id)
     .setIssuedAt()
@@ -37,7 +40,10 @@ export async function verifyToken(token: string): Promise<AuthUser | null> {
   try {
     const { payload } = await jwtVerify(token, jwtSecret);
     if (!payload.sub || typeof payload.email !== 'string') return null;
-    return { id: payload.sub, email: payload.email };
+    const role =
+      payload.role === 'admin' ? 'admin' : payload.role === 'student' ? 'student' : null;
+    if (!role) return null;
+    return { id: payload.sub, email: payload.email, role };
   } catch {
     return null;
   }
@@ -47,4 +53,14 @@ export async function getAuthUser(c: Context): Promise<AuthUser | null> {
   const token = getCookie(c, 'token');
   if (!token) return null;
   return verifyToken(token);
+}
+
+export function setAuthCookie(c: Context, token: string): void {
+  setCookie(c, 'token', token, {
+    httpOnly: true,
+    sameSite: 'Lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+  });
 }

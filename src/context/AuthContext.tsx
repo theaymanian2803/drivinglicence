@@ -6,6 +6,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInStudent: (email: string, accessCode: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -35,13 +36,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null };
   };
 
+  const signInStudent = async (email: string, accessCode: string) => {
+    const res = await api.post<{ user: User; name: string | null }>('/student-auth/login', {
+      email,
+      accessCode,
+    });
+    if (res.error) return { error: res.error.message };
+    setUser({ ...res.data.user, name: res.data.name ?? undefined });
+    return { error: null };
+  };
+
   const signOut = async () => {
     await api.post('/auth/logout', {});
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signInStudent, signOut }}>
       {children}
     </AuthContext.Provider>
   );

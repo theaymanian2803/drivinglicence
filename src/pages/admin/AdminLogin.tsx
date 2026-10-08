@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Car, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+// Dev-only login shortcut, mirrored from ADMIN_EMAIL / ADMIN_PASSWORD in .env.
+// Every use sits behind an import.meta.env.DEV guard so Vite folds these out of
+// production builds — a hardcoded admin password must never reach a deployed bundle.
+const DEV_ADMIN_EMAIL = 'admin@example.com';
+const DEV_ADMIN_PASSWORD = '123123123';
+
 export default function AdminLogin() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
@@ -93,6 +99,34 @@ export default function AdminLogin() {
               )}
             </button>
           </form>
+
+          {import.meta.env.DEV && (
+            <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Dev access
+              </p>
+              <dl className="mt-2 space-y-1 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-500">Email</dt>
+                  <dd className="font-mono text-slate-900">{DEV_ADMIN_EMAIL}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-500">Mot de passe</dt>
+                  <dd className="font-mono text-slate-900">{DEV_ADMIN_PASSWORD}</dd>
+                </div>
+              </dl>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail(DEV_ADMIN_EMAIL);
+                  setPassword(DEV_ADMIN_PASSWORD);
+                }}
+                className="mt-3 w-full rounded-xl border border-slate-300 bg-white py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Remplir les champs
+              </button>
+            </div>
+          )}
         </div>
 
         <p className="text-center text-slate-500 text-sm mt-6">

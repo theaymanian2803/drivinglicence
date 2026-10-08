@@ -16,6 +16,10 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
   const [description, setDescription] = useState(series?.description ?? '');
   const [isActive, setIsActive] = useState(series?.is_active ?? true);
   const [category, setCategory] = useState(series?.category ?? 'B');
+  const [passScore, setPassScore] = useState<number>(series?.pass_score ?? 35);
+  const [requiredQuestions, setRequiredQuestions] = useState<number>(
+    series?.required_questions ?? 40
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -25,6 +29,8 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
       setDescription(series.description ?? '');
       setIsActive(series.is_active);
       setCategory(series.category);
+      setPassScore(series.pass_score);
+      setRequiredQuestions(series.required_questions);
     }
   }, [series]);
 
@@ -32,6 +38,14 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
     e.preventDefault();
     if (!title.trim()) {
       setError('Title is required.');
+      return;
+    }
+    if (passScore < 0) {
+      setError('Pass score cannot be negative.');
+      return;
+    }
+    if (requiredQuestions > 0 && passScore > requiredQuestions) {
+      setError('Pass score cannot exceed the number of questions.');
       return;
     }
     setSaving(true);
@@ -42,6 +56,8 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
       description: description.trim() || null,
       is_active: isActive,
       category,
+      pass_score: passScore,
+      required_questions: requiredQuestions,
     };
 
     let res;
@@ -106,6 +122,33 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
               placeholder="Optional description of this series..."
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Pass score</label>
+              <input
+                type="number"
+                min={0}
+                value={passScore}
+                onChange={(e) => setPassScore(parseInt(e.target.value, 10))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              />
+              <p className="text-xs text-slate-400 mt-1">Correct answers needed to pass.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Questions required
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={requiredQuestions}
+                onChange={(e) => setRequiredQuestions(parseInt(e.target.value, 10))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              />
+              <p className="text-xs text-slate-400 mt-1">0 = no completeness check.</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

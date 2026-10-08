@@ -1,16 +1,16 @@
 import { Hono } from 'hono';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db';
-import { getAuthUser, type AppEnv } from '../auth';
-import { requireAdmin } from '../middleware';
+import type { AppEnv } from '../auth';
+import { requireAdmin, requireUser } from '../middleware';
 import { toSeries, toQuestion } from '../serialize';
 import type { SeriesInput } from '../../src/types';
 
 export const seriesRoutes = new Hono<AppEnv>();
 
-seriesRoutes.get('/', async (c) => {
-  const isAdmin = !!(await getAuthUser(c));
-  const includeAll = c.req.query('all') === 'true' && isAdmin;
+seriesRoutes.get('/', requireUser, async (c) => {
+  const user = c.get('user');
+  const includeAll = c.req.query('all') === 'true' && user.role === 'admin';
   const result = await db.execute(
     `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
      FROM series s
@@ -20,7 +20,7 @@ seriesRoutes.get('/', async (c) => {
   return c.json({ data: result.rows.map((r) => toSeries(r as Record<string, unknown>)) });
 });
 
-seriesRoutes.get('/:id', async (c) => {
+seriesRoutes.get('/:id', requireUser, async (c) => {
   const id = c.req.param('id');
   if (!id) return c.json({ error: 'Invalid series id' }, 400);
   const result = await db.execute({ sql: 'SELECT * FROM series WHERE id = ?', args: [id] });
@@ -28,7 +28,7 @@ seriesRoutes.get('/:id', async (c) => {
   return c.json({ data: toSeries(result.rows[0] as Record<string, unknown>) });
 });
 
-seriesRoutes.get('/:id/questions', async (c) => {
+seriesRoutes.get('/:id/questions', requireUser, async (c) => {
   const seriesId = c.req.param('id');
   if (!seriesId) return c.json({ error: 'Invalid series id' }, 400);
   const result = await db.execute({
@@ -44,13 +44,15 @@ seriesRoutes.post('/', requireAdmin, async (c) => {
   const now = new Date().toISOString();
   const id = randomUUID();
   await db.execute({
-    sql: 'INSERT INTO series (id, title, description, is_active, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    sql: 'INSERT INTO series (id, title, description, is_active, category, pass_score, required_questions, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     args: [
       id,
       body.title.trim(),
       body.description || null,
       body.is_active ? 1 : 0,
       body.category || 'B',
+      body.pass_score ?? 35,
+      body.required_questions ?? 40,
       now,
       now,
     ],
@@ -66,12 +68,14 @@ seriesRoutes.put('/:id', requireAdmin, async (c) => {
   if (!body.title?.trim()) return c.json({ error: 'Title is required' }, 400);
   const now = new Date().toISOString();
   await db.execute({
-    sql: 'UPDATE series SET title = ?, description = ?, is_active = ?, category = ?, updated_at = ? WHERE id = ?',
+    sql: 'UPDATE series SET title = ?, description = ?, is_active = ?, category = ?, pass_score = ?, required_questions = ?, updated_at = ? WHERE id = ?',
     args: [
       body.title.trim(),
       body.description || null,
       body.is_active ? 1 : 0,
       body.category || 'B',
+      body.pass_score ?? 35,
+      body.required_questions ?? 40,
       now,
       id,
     ],

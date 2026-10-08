@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   RotateCcw,
@@ -14,9 +14,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Car,
+  BookOpen,
 } from 'lucide-react';
 import { api } from '@/lib/db';
-import type { Question, Series } from '@/types';
+import type { CompleteRevisionResult, Question, RevisionSummary, Series } from '@/types';
 
 type ExamPhase = 'loading' | 'exam' | 'results';
 type Feedback = 'none' | 'correct' | 'wrong' | 'timeout';
@@ -28,11 +29,16 @@ interface ExamResult {
   timedOut: boolean;
 }
 
-const PASSING_SCORE = 32;
+interface ExamScreenProps {
+  revisionMode?: boolean;
+}
 
-export default function ExamScreen() {
+export default function ExamScreen({ revisionMode = false }: ExamScreenProps) {
   const { seriesId } = useParams<{ seriesId: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const homePath = revisionMode ? '/revision' : '/';
 
   const [phase, setPhase] = useState<ExamPhase>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -45,18 +51,77 @@ export default function ExamScreen() {
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioVolume, setAudioVolume] = useState(0.7);
   const [feedback, setFeedback] = useState<Feedback>('none');
+  const [revisionSummary, setRevisionSummary] = useState<RevisionSummary | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const advancingRef = useRef(false);
+  const submittedRef = useRef(false);
 
   const currentQuestion = questions[currentIndex];
 
-  // ===== Load data =====
+  // ===== Submit attempt / revision result when the session finishes =====
   useEffect(() => {
-    if (!seriesId) return;
+    if (phase !== 'results' || submittedRef.current) return;
+    if (results.length === 0) return;
+    submittedRef.current = true;
+    const score = results.filter((r) => r.correct).length;
+
+    if (revisionMode) {
+      api
+        .post<CompleteRevisionResult>('/revision/complete', {
+          results: results.map((r) => ({
+            question_id: r.question.id,
+            correct: r.correct,
+          })),
+        })
+        .then((res) => {
+          if (!res.error) setRevisionSummary(res.data.summary);
+        });
+      return;
+    }
+
+    if (!series?.id) return;
+    api.post('/attempts', {
+      series_id: series.id,
+      score,
+      total_questions: questions.length,
+      wrong_question_ids: results
+        .filter((r) => !r.correct)
+        .map((r) => r.question.id),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, revisionMode, series?.id, results.length, questions.length]);
+
+  // ===== Load data (normal mode fetches the series; revision uses passed questions) =====
+  useEffect(() => {
     async function loadData() {
+      if (revisionMode) {
+        const state = location.state as { questions?: Question[] } | null;
+        const qData = state?.questions;
+        if (!qData || qData.length === 0) {
+          navigate('/revision', { replace: true });
+          return;
+        }
+        setSeries({
+          id: 'revision',
+          title: 'Mes erreurs',
+          description: 'Révision des questions précédemment manquées',
+          is_active: true,
+          category: 'Révision',
+          pass_score: 1,
+          required_questions: 0,
+          created_at: '',
+          updated_at: '',
+        });
+        setQuestions(qData);
+        setTimeLeft(qData[0].timer_duration);
+        setPhase('exam');
+        return;
+      }
+
+      if (!seriesId) return;
       const [seriesRes, questionsRes] = await Promise.all([
         api.get<Series>(`/series/${seriesId}`),
         api.get<Question[]>(`/series/${seriesId}/questions`),
@@ -83,7 +148,8 @@ export default function ExamScreen() {
       setPhase('exam');
     }
     loadData();
-  }, [seriesId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revisionMode, seriesId]);
 
   // ===== Stop audio =====
   const stopAudio = useCallback(() => {
@@ -255,6 +321,7 @@ export default function ExamScreen() {
   const score = results.filter((r) => r.correct).length;
   const totalQuestions = questions.length;
   const answeredCount = results.length;
+  const passScore = series?.pass_score ?? 32;
 
   // ===== LOADING =====
   if (phase === 'loading') {
@@ -273,7 +340,7 @@ export default function ExamScreen() {
         <AlertCircle className="w-12 h-12 text-error-400 mb-4" />
         <p className="text-white text-lg font-medium mb-2">{error}</p>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(homePath)}
           className="mt-4 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
         >
           Retour à l'accueil
@@ -284,8 +351,95 @@ export default function ExamScreen() {
 
   // ===== RESULTS =====
   if (phase === 'results') {
-    const passed = score >= PASSING_SCORE;
+    const passed = score >= passScore;
     const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+
+    if (revisionMode) {
+      const remaining = revisionSummary?.to_review.length ?? null;
+      const mastered = revisionSummary?.corrected.length ?? null;
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-10 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-slide-up">
+              <div className="px-8 py-8 text-center bg-gradient-to-br from-indigo-500 to-primary-700">
+                <div className="inline-flex w-20 h-20 bg-white/20 backdrop-blur rounded-full items-center justify-center mb-4">
+                  <BookOpen className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-1">Révision terminée</h2>
+                <p className="text-white/80 text-lg">
+                  {score} bonne{score > 1 ? 's' : ''} réponse{score > 1 ? 's' : ''} sur {totalQuestions}
+                </p>
+              </div>
+
+              <div className="px-8 py-6">
+                <ul className="space-y-3 mb-6">
+                  {results.map((r, idx) => (
+                    <li
+                      key={r.question.id}
+                      className={`flex gap-3 rounded-xl p-3 border ${
+                        r.correct
+                          ? 'bg-success-50 border-success-200'
+                          : 'bg-error-50 border-error-200'
+                      }`}
+                    >
+                      <div className="flex-shrink-0 mt-0.5">
+                        {r.correct ? (
+                          <CheckCircle2 className="w-5 h-5 text-success-600" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-error-600" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-900">
+                          {idx + 1}. {r.question.question_text}
+                        </p>
+                        <div className="mt-1.5 space-y-1">
+                          {r.question.correct_answers.map((num) => {
+                            const key = `option_${num}` as keyof Question;
+                            const text = r.question[key] as string | null;
+                            if (!text) return null;
+                            return (
+                              <p key={num} className="text-sm text-success-700 flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                                {text}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {revisionSummary && (
+                  <div className="text-center text-sm text-slate-600 mb-6">
+                    {remaining} question{remaining === 1 ? '' : 's'} encore à revoir
+                    {mastered !== null ? ` · ${mastered} maîtrisée${mastered === 1 ? '' : 's'}` : ''}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => navigate('/revision')}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    Mes erreurs
+                  </button>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Recommencer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex items-center justify-center px-4 py-10">
@@ -323,8 +477,17 @@ export default function ExamScreen() {
                   style={{ width: `${percentage}%` }}
                 />
               </div>
-              <p className="text-sm text-slate-500 mb-6">
-                {percentage}% — Score minimum: {PASSING_SCORE}/{totalQuestions}
+              <p className="text-sm text-slate-500 mb-2">
+                {percentage}% — Score minimum: {passScore}/{totalQuestions}
+              </p>
+              <p className={`text-sm font-medium mb-6 ${passed ? 'text-success-600' : 'text-error-600'}`}>
+                {passed
+                  ? `Seuil atteint — ${score - passScore} ${
+                      score - passScore === 1 ? 'réponse' : 'réponses'
+                    } au-dessus du minimum.`
+                  : `Encore ${passScore - score} ${
+                      passScore - score === 1 ? 'réponse correcte' : 'réponses correctes'
+                    } pour réussir.`}
               </p>
 
               <div className="grid grid-cols-3 gap-4 mb-8">
@@ -403,7 +566,7 @@ export default function ExamScreen() {
       {/* Top bar */}
       <div className="bg-slate-800 px-4 py-3 flex items-center justify-between border-b border-slate-700">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(homePath)}
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />

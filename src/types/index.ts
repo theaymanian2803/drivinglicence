@@ -4,6 +4,8 @@ export interface Series {
   description: string | null;
   is_active: boolean;
   category: string;
+  pass_score: number;
+  required_questions: number;
   created_at: string;
   updated_at: string;
 }
@@ -46,14 +48,62 @@ export interface SeriesInput {
   description: string | null;
   is_active: boolean;
   category: string;
+  pass_score: number;
+  required_questions: number;
 }
 
 export interface SeriesWithCount extends Series {
   question_count: number;
 }
 
+export type Role = 'admin' | 'student';
+
 export interface User {
   id: string;
   email: string;
+  role: Role;
+  name?: string;
+}
+
+export interface Student {
+  id: string;
+  name: string | null;
+  email: string;
+  access_code: string;
+  is_active: boolean;
   created_at: string;
+  attempt_count?: number;
+}
+
+export interface ExamAttempt {
+  id: string;
+  series_id: string;
+  series_title: string | null;
+  score: number;
+  total_questions: number;
+  passed: boolean;
+  created_at: string;
+}
+
+export interface RevisionQuestion extends Question {
+  wrong_count: number;
+  series_title: string | null;
+  corrected_at: string | null;
+}
+
+export interface RevisionSummary {
+  to_review: RevisionQuestion[];
+  corrected: RevisionQuestion[];
+  weak_areas: WeakArea[];
+}
+
+export interface WeakArea {
+  category: string;
+  question_count: number;
+  wrong_total: number;
+}
+
+export interface CompleteRevisionResult {
+  ok: boolean;
+  summary: RevisionSummary;
 }

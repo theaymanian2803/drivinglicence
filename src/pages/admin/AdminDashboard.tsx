@@ -13,6 +13,7 @@ import {
   EyeOff,
   LogOut,
   ArrowLeft,
+  Users,
 } from 'lucide-react';
 import { api } from '@/lib/db';
 import { useAuth } from '@/context/AuthContext';
@@ -58,12 +59,14 @@ export default function AdminDashboard() {
     }
   }
 
-  async function toggleActive(s: Series) {
+  async function toggleActive(s: SeriesWithCount) {
     await api.put(`/series/${s.id}`, {
       title: s.title,
       description: s.description,
       is_active: !s.is_active,
       category: s.category,
+      pass_score: s.pass_score,
+      required_questions: s.required_questions,
     });
     loadSeries();
   }
@@ -83,6 +86,13 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              to="/admin/students"
+              className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
+            >
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Students</span>
+            </Link>
             <Link
               to="/"
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import { setCookie, deleteCookie } from 'hono/cookie';
+import { deleteCookie } from 'hono/cookie';
 import { db } from '../db';
-import { verifyPassword, signToken, getAuthUser, type AppEnv } from '../auth';
+import { verifyPassword, signToken, getAuthUser, setAuthCookie, type AppEnv } from '../auth';
 
 export const authRoutes = new Hono<AppEnv>();
 
@@ -23,14 +23,8 @@ authRoutes.post('/login', async (c) => {
   const ok = await verifyPassword(password, row.password_hash);
   if (!ok) return c.json({ error: 'Invalid email or password' }, 401);
 
-  const user = { id: row.id, email: row.email };
-  setCookie(c, 'token', await signToken(user), {
-    httpOnly: true,
-    sameSite: 'Lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
-  });
+  const user = { id: row.id, email: row.email, role: 'admin' as const };
+  setAuthCookie(c, await signToken(user));
   return c.json({ data: { user } });
 });
 
