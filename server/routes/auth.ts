@@ -11,17 +11,17 @@ authRoutes.post('/login', async (c) => {
   const body = await c.req.json<LoginBody>().catch(() => ({} as LoginBody));
   const email = body.email?.trim().toLowerCase();
   const password = body.password;
-  if (!email || !password) return c.json({ error: 'Email and password are required' }, 400);
+  if (!email || !password) return c.json({ error: 'البريد الإلكتروني وكلمة المرور مطلوبان' }, 400);
 
   const result = await db.execute({
     sql: 'SELECT id, email, password_hash FROM users WHERE email = ? LIMIT 1',
     args: [email],
   });
-  if (result.rows.length === 0) return c.json({ error: 'Invalid email or password' }, 401);
+  if (result.rows.length === 0) return c.json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيح' }, 401);
 
   const row = result.rows[0] as unknown as { id: string; email: string; password_hash: string };
   const ok = await verifyPassword(password, row.password_hash);
-  if (!ok) return c.json({ error: 'Invalid email or password' }, 401);
+  if (!ok) return c.json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيح' }, 401);
 
   const user = { id: row.id, email: row.email, role: 'admin' as const };
   setAuthCookie(c, await signToken(user));
@@ -35,6 +35,6 @@ authRoutes.post('/logout', (c) => {
 
 authRoutes.get('/me', async (c) => {
   const user = await getAuthUser(c);
-  if (!user) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user) return c.json({ error: 'غير مصرّح' }, 401);
   return c.json({ data: { user } });
 });

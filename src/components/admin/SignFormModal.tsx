@@ -35,15 +35,15 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Titre requis.');
+      setError('العنوان مطلوب.');
       return;
     }
     if (!imageUrl.trim()) {
-      setError("L'image du panneau est requise.");
+      setError('صورة اللوحة مطلوبة.');
       return;
     }
     if (!description.trim()) {
-      setError('La signification est requise.');
+      setError('المعنى مطلوب.');
       return;
     }
     setSaving(true);
@@ -77,7 +77,7 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto animate-slide-up">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <h2 className="text-lg font-bold text-slate-900">
-            {sign ? 'Modifier le panneau' : 'Ajouter un panneau'}
+            {sign ? 'تعديل اللوحة' : 'إضافة لوحة'}
           </h2>
           <button
             onClick={onClose}
@@ -95,25 +95,25 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
             </div>
           )}
 
-          <ImageUpload value={imageUrl} onChange={setImageUrl} label="Image du panneau" hint="Obligatoire" />
+          <ImageUpload value={imageUrl} onChange={setImageUrl} label="صورة اللوحة" hint="مطلوب" />
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Nom du panneau <span className="text-error-500">*</span>
+              اسم اللوحة <span className="text-error-500">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex. Cédez le passage"
+              placeholder="مثال: أعطِ الأولوية"
               dir="auto"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Catégorie</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">الفئة</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -129,7 +129,7 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Signification <span className="text-error-500">*</span>
+              المعنى <span className="text-error-500">*</span>
             </label>
             <textarea
               required
@@ -137,7 +137,7 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               dir="auto"
-              placeholder="Explique ce que ce panneau signifie pour le conducteur..."
+              placeholder="اشرح معنى هذه اللوحة للسائق..."
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
             />
           </div>
@@ -145,12 +145,12 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
           <ImageUpload
             value={scenarioImageUrl}
             onChange={setScenarioImageUrl}
-            label="Image de situation (facultatif)"
-            hint="Une image montrant le panneau en situation sur la route."
+            label="صورة الوضعية (اختياري)"
+            hint="صورة تُظهر اللوحة في وضعية على الطريق."
           />
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Statut</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">الحالة</label>
             <button
               type="button"
               onClick={() => setIsActive(!isActive)}
@@ -160,7 +160,7 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
                   : 'bg-slate-50 border-slate-200 text-slate-500'
               }`}
             >
-              {isActive ? 'Visible' : 'Masqué'}
+              {isActive ? 'ظاهرة' : 'مخفية'}
             </button>
           </div>
 
@@ -170,14 +170,14 @@ export default function SignFormModal({ sign, onClose, onSaved }: Props) {
               onClick={onClose}
               className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
             >
-              Annuler
+              إلغاء
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : sign ? 'Enregistrer' : 'Créer'}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : sign ? 'حفظ' : 'إنشاء'}
             </button>
           </div>
         </form>

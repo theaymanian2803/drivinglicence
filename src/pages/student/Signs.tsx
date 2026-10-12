@@ -14,7 +14,7 @@ export default function Signs() {
   useEffect(() => {
     api.get<TrafficSign[]>('/signs').then((res) => {
       if (res.error) {
-        setError('Impossible de charger les panneaux. Réessaie plus tard.');
+        setError('تعذّر تحميل اللوحات. حاول لاحقاً.');
       } else {
         setSigns(res.data);
       }
@@ -43,7 +43,7 @@ export default function Signs() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <SiteHeader title="Les panneaux" subtitle="Signification des panneaux de signalisation" />
+      <SiteHeader title="اللوحات" subtitle="معاني لوحات المرور" />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center gap-3 mb-8">
@@ -51,9 +51,9 @@ export default function Signs() {
             <Signpost className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Panneaux de signalisation</h1>
+            <h1 className="text-2xl font-bold text-slate-900">لوحات المرور</h1>
             <p className="text-sm text-slate-500">
-              Clique sur un panneau pour voir sa signification
+              انقر على لوحة لعرض معناها
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function Signs() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 mt-3">Chargement...</p>
+            <p className="text-slate-400 mt-3">جارٍ التحميل...</p>
           </div>
         )}
 
@@ -75,7 +75,7 @@ export default function Signs() {
         {!loading && !error && signs.length === 0 && (
           <div className="max-w-md mx-auto bg-white border border-slate-200 rounded-xl p-10 text-center">
             <Signpost className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">Aucun panneau disponible pour le moment.</p>
+            <p className="text-slate-500 font-medium">لا توجد لوحات متاحة حالياً.</p>
           </div>
         )}
 
@@ -85,8 +85,8 @@ export default function Signs() {
               <section key={category} className="animate-fade-in">
                 <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-200 pb-2">
                   {category}
-                  <span className="ml-2 text-sm font-medium text-slate-400">
-                    {list.length} panneau{list.length > 1 ? 'x' : ''}
+                  <span className="ms-2 text-sm font-medium text-slate-400">
+                    {list.length} لوحة
                   </span>
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -96,7 +96,7 @@ export default function Signs() {
                       <button
                         key={s.id}
                         onClick={() => toggle(s.id)}
-                        className={`text-left bg-white rounded-2xl border p-4 transition-all duration-200 ${
+                        className={`text-start bg-white rounded-2xl border p-4 transition-all duration-200 ${
                           isOpen
                             ? 'border-primary-300 shadow-lg col-span-2 sm:col-span-3 lg:col-span-4'
                             : 'border-slate-200 hover:border-primary-300 hover:shadow-md'
@@ -131,11 +131,11 @@ export default function Signs() {
                               <figure>
                                 <figcaption className="flex items-center gap-1.5 text-xs font-medium text-slate-500 mb-2">
                                   <CreditCard className="w-4 h-4" />
-                                  Exemple en situation
+                                  مثال في الوضعية
                                 </figcaption>
                                 <img
                                   src={s.scenario_image_url}
-                                  alt={`Situation ${s.title}`}
+                                  alt={`وضعية ${s.title}`}
                                   className="rounded-xl border border-slate-200 w-full object-contain bg-slate-50"
                                 />
                               </figure>

@@ -32,7 +32,7 @@ async function request<T>(path: string, init?: RequestInitShape): Promise<ApiRes
       const message =
         raw && typeof raw.error === 'string'
           ? raw.error
-          : `Request failed (${res.status})`;
+          : `فشل الطلب (${res.status})`;
       return { data: null, error: { message } };
     }
 
@@ -41,7 +41,7 @@ async function request<T>(path: string, init?: RequestInitShape): Promise<ApiRes
   } catch (err) {
     return {
       data: null,
-      error: { message: err instanceof Error ? err.message : 'Network error' },
+      error: { message: err instanceof Error ? err.message : 'خطأ في الشبكة' },
     };
   }
 }

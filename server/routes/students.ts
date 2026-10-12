@@ -23,7 +23,7 @@ async function generateAccessCode(): Promise<string> {
     });
     if (existing.rows.length === 0) return code;
   }
-  throw new Error('Could not generate a unique access code');
+  throw new Error('تعذّر إنشاء رمز دخول فريد');
 }
 
 type CreateStudentBody = { name?: string; email?: string };
@@ -40,7 +40,7 @@ studentsRoutes.get('/', requireAdmin, async (c) => {
 studentsRoutes.post('/', requireAdmin, async (c) => {
   const body = await c.req.json<CreateStudentBody>().catch(() => ({} as CreateStudentBody));
   const email = body.email?.trim().toLowerCase();
-  if (!email) return c.json({ error: 'Email is required' }, 400);
+  if (!email) return c.json({ error: 'البريد الإلكتروني مطلوب' }, 400);
 
   const name = body.name?.trim() || null;
   const accessCode = await generateAccessCode();
@@ -53,7 +53,7 @@ studentsRoutes.post('/', requireAdmin, async (c) => {
       args: [id, name, email, accessCode, now],
     });
   } catch {
-    return c.json({ error: 'A student with this email already exists' }, 409);
+    return c.json({ error: 'يوجد مترشح بهذا البريد الإلكتروني بالفعل' }, 409);
   }
 
   const created = await db.execute({ sql: 'SELECT * FROM students WHERE id = ?', args: [id] });
@@ -62,28 +62,28 @@ studentsRoutes.post('/', requireAdmin, async (c) => {
 
 studentsRoutes.post('/:id/reset-code', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid student id' }, 400);
+  if (!id) return c.json({ error: 'معرّف المترشح غير صالح' }, 400);
   const accessCode = await generateAccessCode();
   const result = await db.execute({
     sql: 'UPDATE students SET access_code = ? WHERE id = ?',
     args: [accessCode, id],
   });
-  if (result.rowsAffected === 0) return c.json({ error: 'Student not found' }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: 'المترشح غير موجود' }, 404);
   const updated = await db.execute({ sql: 'SELECT * FROM students WHERE id = ?', args: [id] });
   return c.json({ data: toStudent(updated.rows[0] as Record<string, unknown>) });
 });
 
 studentsRoutes.delete('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid student id' }, 400);
+  if (!id) return c.json({ error: 'معرّف المترشح غير صالح' }, 400);
   const result = await db.execute({ sql: 'DELETE FROM students WHERE id = ?', args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: 'Student not found' }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: 'المترشح غير موجود' }, 404);
   return c.json({ data: { ok: true } });
 });
 
 studentsRoutes.get('/:id/attempts', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid student id' }, 400);
+  if (!id) return c.json({ error: 'معرّف المترشح غير صالح' }, 400);
   const result = await db.execute({
     sql: `SELECT a.*, s.title AS series_title
      FROM exam_attempts a

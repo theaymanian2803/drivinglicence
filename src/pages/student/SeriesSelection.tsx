@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ChevronRight,
+  ChevronLeft,
   Clock,
   FileQuestion,
   Loader2,
@@ -26,7 +26,7 @@ export default function SeriesSelection() {
     async function loadSeries() {
       const res = await api.get<SeriesWithCount[]>('/series');
       if (res.error) {
-        setError('Unable to load exam series. Please try again later.');
+        setError('تعذّر تحميل سلاسل الامتحان. الرجاء المحاولة لاحقاً.');
         setLoading(false);
         return;
       }
@@ -47,15 +47,14 @@ export default function SeriesSelection() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <SiteHeader title="Code de la Route" subtitle="Catégorie B — Maroc" revisionCount={toReviewCount} />
+      <SiteHeader title="رخصة السياقة" subtitle="الفئة ب — المغرب" revisionCount={toReviewCount} />
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-slate-900 mb-3">Choisissez une série</h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-3">اختر سلسلة</h2>
           <p className="text-slate-500 max-w-2xl mx-auto">
-            Sélectionnez une série d'examens pour commencer votre test. Chaque série contient des
-            questions avec un chronomètre et des scénarios routiers.
+            اختر سلسلة امتحان لبدء اختبارك. تحتوي كل سلسلة على أسئلة موقوتة وسيناريوهات مرورية.
           </p>
         </div>
 
@@ -72,17 +71,17 @@ export default function SeriesSelection() {
                   <Trophy className="w-7 h-7 text-white" />
                 </div>
                 <span className="px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
-                  OFFICIEL
+                  رسمي
                 </span>
               </div>
-              <h3 className="text-xl font-bold mb-1">Examen officiel</h3>
+              <h3 className="text-xl font-bold mb-1">الامتحان الرسمي</h3>
               <p className="text-white/80 text-sm mb-4">
-                {officialMeta.question_count} questions tirées de toute la banque · Score
-                minimum {officialMeta.pass_score}/{officialMeta.question_count} · {officialMeta.timer_duration}s / question
+                {officialMeta.question_count} سؤال من كامل البنك · العلامة الدنيا{' '}
+                {officialMeta.pass_score}/{officialMeta.question_count} · {officialMeta.timer_duration} ثانية / سؤال
               </p>
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                Commencer la simulation
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                ابدأ المحاكاة
+                <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </div>
             </Link>
           )}
@@ -94,14 +93,14 @@ export default function SeriesSelection() {
                   <TrendingUp className="w-6 h-6 text-success-600" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900">Prêt pour l'examen</p>
+                  <p className="font-bold text-slate-900">جاهز للامتحان</p>
                   <p className="text-xs text-slate-500">
-                    Basé sur tes {readiness.attempts_count > 0 ? 'dernières tentatives' : 'résultats'} et ta révision
+                    استناداً إلى {readiness.attempts_count > 0 ? 'محاولاتك الأخيرة' : 'نتائجك'} ومراجعتك
                   </p>
                 </div>
                 {readiness.trend !== 'flat' && (
                   <span
-                    className={`ml-auto flex items-center gap-1 text-xs font-semibold ${
+                    className={`ms-auto flex items-center gap-1 text-xs font-semibold ${
                       readiness.trend === 'up' ? 'text-success-600' : 'text-error-600'
                     }`}
                   >
@@ -110,7 +109,7 @@ export default function SeriesSelection() {
                     ) : (
                       <TrendingDown className="w-4 h-4" />
                     )}
-                    {readiness.trend === 'up' ? 'En hausse' : 'En baisse'}
+                    {readiness.trend === 'up' ? 'في ارتفاع' : 'في انخفاض'}
                   </span>
                 )}
               </div>
@@ -134,13 +133,13 @@ export default function SeriesSelection() {
               </div>
               <p className="text-sm text-slate-500">
                 {readiness.readiness_pct >= 70
-                  ? 'Prêt — tu as toutes les chances de réussir.'
+                  ? 'جاهز — لديك كل الحظوظ للنجاح.'
                   : readiness.readiness_pct >= 40
-                  ? 'Bien parti — continue les séries et la révision.'
-                  : 'En route — entraîne-toi encore avant l’examen officiel.'}
+                  ? 'على الطريق الصحيح — واصل السلاسل والمراجعة.'
+                  : 'في الطريق — تدرّب أكثر قبل الامتحان الرسمي.'}
                 {readiness.to_review > 0 && (
                   <span className="mt-1 block text-xs text-warning-600">
-                    {readiness.to_review} question{readiness.to_review > 1 ? 's' : ''} à revoir
+                    {readiness.to_review} سؤال للمراجعة
                   </span>
                 )}
               </p>
@@ -152,7 +151,7 @@ export default function SeriesSelection() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 mt-3">Chargement des séries...</p>
+            <p className="text-slate-400 mt-3">جارٍ تحميل السلاسل...</p>
           </div>
         )}
 
@@ -165,8 +164,8 @@ export default function SeriesSelection() {
         {!loading && !error && series.length === 0 && (
           <div className="max-w-md mx-auto bg-white border border-slate-200 rounded-xl p-10 text-center">
             <FileQuestion className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">Aucune série disponible pour le moment.</p>
-            <p className="text-slate-400 text-sm mt-1">Veuillez revenir plus tard.</p>
+            <p className="text-slate-500 font-medium">لا توجد سلاسل متاحة حالياً.</p>
+            <p className="text-slate-400 text-sm mt-1">الرجاء العودة لاحقاً.</p>
           </div>
         )}
 
@@ -198,17 +197,17 @@ export default function SeriesSelection() {
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <FileQuestion className="w-4 h-4" />
-                        {questionCount}/{requiredLabel ?? '∞'} questions
+                        {questionCount}/{requiredLabel ?? '∞'} سؤال
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Clock className="w-4 h-4" />
-                        ~{Math.ceil((questionCount * 20) / 60)} min
+                        ~{Math.ceil((questionCount * 20) / 60)} دقيقة
                       </span>
                     </div>
                     {incomplete ? (
                       <Lock className="w-5 h-5 text-slate-300" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
+                      <ChevronLeft className="w-5 h-5 text-slate-300 group-hover:text-primary-600 group-hover:-translate-x-1 transition-all" />
                     )}
                   </div>
                 </>
@@ -218,14 +217,13 @@ export default function SeriesSelection() {
                   <div
                     key={s.id}
                     className="group bg-white rounded-2xl border border-slate-200 p-6 opacity-70 cursor-not-allowed select-none animate-fade-in"
-                    title={`Série incomplète — ${questionCount}/${requiredLabel ?? '?'} questions`}
+                    title={`سلسلة غير مكتملة — ${questionCount}/${requiredLabel ?? '?'} سؤال`}
                   >
                     {cardInner}
                     <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-center gap-2 text-sm font-medium text-slate-400">
                       <Lock className="w-4 h-4" />
                       <span>
-                        Incomplète ({questionCount}/{requiredLabel} questions) — En cours de
-                        préparation
+                        غير مكتملة ({questionCount}/{requiredLabel} سؤال) — قيد الإعداد
                       </span>
                     </div>
                   </div>

@@ -19,7 +19,7 @@ seriesRoutes.get('/', optionalUser, async (c) => {
     const isPublic = settings.rows[0]
       ? String((settings.rows[0] as Record<string, unknown>).value) === '1'
       : false;
-    if (!isPublic) return c.json({ error: 'Unauthorized' }, 401);
+    if (!isPublic) return c.json({ error: 'غير مصرّح' }, 401);
     const active = await db.execute(
       `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
        FROM series s
@@ -40,15 +40,15 @@ seriesRoutes.get('/', optionalUser, async (c) => {
 
 seriesRoutes.get('/:id', requireUser, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid series id' }, 400);
+  if (!id) return c.json({ error: 'معرّف السلسلة غير صالح' }, 400);
   const result = await db.execute({ sql: 'SELECT * FROM series WHERE id = ?', args: [id] });
-  if (result.rows.length === 0) return c.json({ error: 'Series not found' }, 404);
+  if (result.rows.length === 0) return c.json({ error: 'السلسلة غير موجودة' }, 404);
   return c.json({ data: toSeries(result.rows[0] as Record<string, unknown>) });
 });
 
 seriesRoutes.get('/:id/questions', requireUser, async (c) => {
   const seriesId = c.req.param('id');
-  if (!seriesId) return c.json({ error: 'Invalid series id' }, 400);
+  if (!seriesId) return c.json({ error: 'معرّف السلسلة غير صالح' }, 400);
   const result = await db.execute({
     sql: 'SELECT * FROM questions WHERE series_id = ? ORDER BY position ASC, created_at ASC',
     args: [seriesId],
@@ -58,7 +58,7 @@ seriesRoutes.get('/:id/questions', requireUser, async (c) => {
 
 seriesRoutes.post('/', requireAdmin, async (c) => {
   const body = await c.req.json<SeriesInput>().catch(() => ({} as SeriesInput));
-  if (!body.title?.trim()) return c.json({ error: 'Title is required' }, 400);
+  if (!body.title?.trim()) return c.json({ error: 'العنوان مطلوب' }, 400);
   const now = new Date().toISOString();
   const id = randomUUID();
   await db.execute({
@@ -81,9 +81,9 @@ seriesRoutes.post('/', requireAdmin, async (c) => {
 
 seriesRoutes.put('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid series id' }, 400);
+  if (!id) return c.json({ error: 'معرّف السلسلة غير صالح' }, 400);
   const body = await c.req.json<SeriesInput>().catch(() => ({} as SeriesInput));
-  if (!body.title?.trim()) return c.json({ error: 'Title is required' }, 400);
+  if (!body.title?.trim()) return c.json({ error: 'العنوان مطلوب' }, 400);
   const now = new Date().toISOString();
   await db.execute({
     sql: 'UPDATE series SET title = ?, description = ?, is_active = ?, category = ?, pass_score = ?, required_questions = ?, updated_at = ? WHERE id = ?',
@@ -99,14 +99,14 @@ seriesRoutes.put('/:id', requireAdmin, async (c) => {
     ],
   });
   const updated = await db.execute({ sql: 'SELECT * FROM series WHERE id = ?', args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: 'Series not found' }, 404);
+  if (updated.rows.length === 0) return c.json({ error: 'السلسلة غير موجودة' }, 404);
   return c.json({ data: toSeries(updated.rows[0] as Record<string, unknown>) });
 });
 
 seriesRoutes.delete('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid series id' }, 400);
+  if (!id) return c.json({ error: 'معرّف السلسلة غير صالح' }, 400);
   const result = await db.execute({ sql: 'DELETE FROM series WHERE id = ?', args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: 'Series not found' }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: 'السلسلة غير موجودة' }, 404);
   return c.json({ data: { ok: true } });
 });

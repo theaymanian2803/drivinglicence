@@ -32,10 +32,10 @@ attemptsRoutes.post('/', requireStudent, async (c) => {
   const body = await c.req.json<SubmitBody>().catch(() => ({} as SubmitBody));
   const { series_id, score, total_questions } = body;
   if (!series_id || typeof score !== 'number' || typeof total_questions !== 'number') {
-    return c.json({ error: 'series_id, score and total_questions are required' }, 400);
+    return c.json({ error: 'معرّف السلسلة والنتيجة وعدد الأسئلة مطلوبة' }, 400);
   }
   if (score < 0 || total_questions <= 0 || score > total_questions) {
-    return c.json({ error: 'Invalid score values' }, 400);
+    return c.json({ error: 'قيم النتيجة غير صالحة' }, 400);
   }
   const seriesRes = await db.execute({
     sql: `SELECT s.pass_score, s.required_questions,
@@ -43,7 +43,7 @@ attemptsRoutes.post('/', requireStudent, async (c) => {
      FROM series s WHERE s.id = ? LIMIT 1`,
     args: [series_id],
   });
-  if (seriesRes.rows.length === 0) return c.json({ error: 'Series not found' }, 404);
+  if (seriesRes.rows.length === 0) return c.json({ error: 'السلسلة غير موجودة' }, 404);
   const srow = seriesRes.rows[0] as unknown as {
     pass_score: number;
     required_questions: number;
@@ -54,7 +54,7 @@ attemptsRoutes.post('/', requireStudent, async (c) => {
   const questionCount = Number(srow.question_count);
   if (requiredQuestions > 0 && questionCount !== requiredQuestions) {
     return c.json(
-      { error: `Series is incomplete (${questionCount}/${requiredQuestions} questions)` },
+      { error: `السلسلة غير مكتملة (${questionCount}/${requiredQuestions} سؤال)` },
       400
     );
   }

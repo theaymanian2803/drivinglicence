@@ -37,15 +37,15 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Title is required.');
+      setError('العنوان مطلوب.');
       return;
     }
     if (passScore < 0) {
-      setError('Pass score cannot be negative.');
+      setError('لا يمكن أن تكون علامة النجاح سالبة.');
       return;
     }
     if (requiredQuestions > 0 && passScore > requiredQuestions) {
-      setError('Pass score cannot exceed the number of questions.');
+      setError('لا يمكن أن تتجاوز علامة النجاح عدد الأسئلة.');
       return;
     }
     setSaving(true);
@@ -80,7 +80,7 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-900">
-            {series ? 'Edit Series' : 'New Series'}
+            {series ? 'تعديل السلسلة' : 'سلسلة جديدة'}
           </h2>
           <button
             onClick={onClose}
@@ -101,32 +101,32 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Title <span className="text-error-500">*</span>
+              العنوان <span className="text-error-500">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Series 1"
+              placeholder="مثال: السلسلة 1"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">الوصف</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Optional description of this series..."
+              placeholder="وصف اختياري لهذه السلسلة..."
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Pass score</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">علامة النجاح</label>
               <input
                 type="number"
                 min={0}
@@ -134,11 +134,11 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
                 onChange={(e) => setPassScore(parseInt(e.target.value, 10))}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               />
-              <p className="text-xs text-slate-400 mt-1">Correct answers needed to pass.</p>
+              <p className="text-xs text-slate-400 mt-1">عدد الإجابات الصحيحة المطلوبة للنجاح.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Questions required
+                عدد الأسئلة المطلوبة
               </label>
               <input
                 type="number"
@@ -147,13 +147,13 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
                 onChange={(e) => setRequiredQuestions(parseInt(e.target.value, 10))}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               />
-              <p className="text-xs text-slate-400 mt-1">0 = no completeness check.</p>
+              <p className="text-xs text-slate-400 mt-1">0 = بدون فحص للاكتمال.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">الفئة</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -161,13 +161,13 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
-                    Category {c}
+                    الفئة {c}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">الحالة</label>
               <button
                 type="button"
                 onClick={() => setIsActive(!isActive)}
@@ -177,7 +177,7 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
                     : 'bg-slate-50 border-slate-200 text-slate-500'
                 }`}
               >
-                {isActive ? 'Active' : 'Inactive'}
+                {isActive ? 'مفعّلة' : 'معطّلة'}
               </button>
             </div>
           </div>
@@ -189,14 +189,14 @@ export default function SeriesFormModal({ series, onClose, onSaved }: Props) {
               onClick={onClose}
               className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
             >
-              Cancel
+              إلغاء
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : series ? 'Save' : 'Create'}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : series ? 'حفظ' : 'إنشاء'}
             </button>
           </div>
         </form>

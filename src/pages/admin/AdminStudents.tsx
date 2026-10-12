@@ -12,7 +12,7 @@ import {
   RefreshCw,
   History,
   LogOut,
-  ArrowLeft,
+  ArrowRight,
   X,
   BarChart3,
 } from 'lucide-react';
@@ -40,7 +40,7 @@ export default function AdminStudents() {
     setLoading(true);
     const res = await api.get<Student[]>('/students');
     if (res.error) {
-      setError('Unable to load students.');
+      setError('تعذّر تحميل المترشحين.');
       setLoading(false);
       return;
     }
@@ -61,7 +61,7 @@ export default function AdminStudents() {
     if (!deleteConfirm) return;
     const res = await api.del(`/students/${deleteConfirm.id}`);
     if (res.error) {
-      setError('Failed to delete student.');
+      setError('فشل حذف المترشح.');
     } else {
       setDeleteConfirm(null);
       loadStudents();
@@ -72,7 +72,7 @@ export default function AdminStudents() {
     if (!resetStudent) return;
     const res = await api.post<Student>(`/students/${resetStudent.id}/reset-code`, {});
     if (res.error) {
-      setError('Failed to reset access code.');
+      setError('فشل إعادة تعيين رمز الدخول.');
       return;
     }
     setStudents((prev) =>
@@ -88,7 +88,7 @@ export default function AdminStudents() {
     const res = await api.get<ExamAttempt[]>(`/students/${student.id}/attempts`);
     setAttemptsLoading(false);
     if (res.error) {
-      setError('Failed to load results.');
+      setError('فشل تحميل النتائج.');
       return;
     }
     setAttempts(res.data);
@@ -100,7 +100,7 @@ export default function AdminStudents() {
       setCopiedId(student.id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      setError('Copy failed — select the code manually.');
+      setError('فشل النسخ — انسخ الرمز يدوياً.');
     }
   }
 
@@ -117,8 +117,8 @@ export default function AdminStudents() {
               <Car className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Students</h1>
-              <p className="text-xs text-slate-500">Manage client access</p>
+              <h1 className="text-lg font-bold text-slate-900">المترشحون</h1>
+              <p className="text-xs text-slate-500">إدارة وصول المترشحين</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -126,15 +126,15 @@ export default function AdminStudents() {
               to="/admin/dashboard"
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Series</span>
+              <ArrowRight className="w-4 h-4" />
+              <span className="hidden sm:inline">السلاسل</span>
             </Link>
             <button
               onClick={signOut}
               className="text-sm text-slate-600 hover:text-error-600 px-3 py-2 rounded-lg hover:bg-error-50 transition-colors flex items-center gap-1.5"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
+              <span className="hidden sm:inline">تسجيل الخروج</span>
             </button>
           </div>
         </div>
@@ -144,9 +144,9 @@ export default function AdminStudents() {
         {/* Section header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Student Management</h2>
+            <h2 className="text-2xl font-bold text-slate-900">إدارة المترشحين</h2>
             <p className="text-slate-500 text-sm mt-1">
-              Create student accounts and share the email + access code with your clients.
+              أنشئ حسابات المترشحين وشارك معهم البريد الإلكتروني ورمز الدخول.
             </p>
           </div>
           <button
@@ -154,7 +154,7 @@ export default function AdminStudents() {
             className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">New Student</span>
+            <span className="hidden sm:inline">مترشح جديد</span>
           </button>
         </div>
 
@@ -174,8 +174,8 @@ export default function AdminStudents() {
         {isEmpty && (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
             <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No students yet.</p>
-            <p className="text-slate-400 text-sm mt-1">Click "New Student" to create your first one.</p>
+            <p className="text-slate-500 font-medium">لا يوجد مترشحون بعد.</p>
+            <p className="text-slate-400 text-sm mt-1">انقر على "مترشح جديد" لإنشاء أول مترشح.</p>
           </div>
         )}
 
@@ -203,7 +203,7 @@ export default function AdminStudents() {
                         : 'bg-slate-100 text-slate-500'
                     }`}
                   >
-                    {s.is_active ? 'Active' : 'Inactive'}
+                    {s.is_active ? 'مفعّل' : 'معطّل'}
                   </span>
                 </div>
 
@@ -214,7 +214,7 @@ export default function AdminStudents() {
                   <button
                     onClick={() => handleCopy(s)}
                     className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                    title="Copy code"
+                    title="نسخ الرمز"
                   >
                     {copiedId === s.id ? (
                       <Check className="w-4 h-4 text-success-600" />
@@ -226,8 +226,8 @@ export default function AdminStudents() {
 
                 <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
                   <BarChart3 className="w-4 h-4" />
-                  {s.attemptCount} exams
-                  <span className="ml-auto">Créé le {new Date(s.created_at).toLocaleDateString('fr-FR')}</span>
+                  {s.attemptCount} امتحان
+                  <span className="ms-auto">أُضيف في {new Date(s.created_at).toLocaleDateString('ar-MA')}</span>
                 </div>
 
                 <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
@@ -236,7 +236,7 @@ export default function AdminStudents() {
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg text-sm font-medium transition-colors"
                   >
                     <History className="w-4 h-4" />
-                    Results
+                    النتائج
                   </button>
                   <button
                     onClick={() => {
@@ -244,14 +244,14 @@ export default function AdminStudents() {
                       setError(null);
                     }}
                     className="p-2 text-slate-500 hover:text-warning-600 hover:bg-warning-50 rounded-lg transition-colors"
-                    title="Reset access code"
+                    title="إعادة تعيين رمز الدخول"
                   >
                     <RefreshCw className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setDeleteConfirm(s)}
                     className="p-2 text-slate-500 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
-                    title="Delete student"
+                    title="حذف المترشح"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -279,25 +279,25 @@ export default function AdminStudents() {
                 <RefreshCw className="w-6 h-6 text-warning-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">Reset access code?</h3>
+                <h3 className="font-bold text-slate-900">إعادة تعيين رمز الدخول؟</h3>
                 <p className="text-sm text-slate-500">{resetStudent.email}</p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-6">
-              The old code will stop working. Share the new one with the student.
+              سيتوقف الرمز القديم عن العمل. شارك الرمز الجديد مع المترشح.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setResetStudent(null)}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 onClick={handleResetCode}
                 className="flex-1 px-4 py-2.5 bg-warning-500 hover:bg-warning-600 text-white rounded-xl font-medium transition-colors"
               >
-                Reset
+                إعادة التعيين
               </button>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function AdminStudents() {
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col animate-slide-up">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-slate-900">Exam history</h3>
+                <h3 className="font-bold text-slate-900">سجل الامتحانات</h3>
                 <p className="text-sm text-slate-500">{attemptsStudent.email}</p>
               </div>
               <button
@@ -327,7 +327,7 @@ export default function AdminStudents() {
                 </div>
               )}
               {!attemptsLoading && attempts.length === 0 && (
-                <p className="text-center text-slate-400 py-10">No exams taken yet.</p>
+                <p className="text-center text-slate-400 py-10">لم يُخضع أي امتحان بعد.</p>
               )}
               {!attemptsLoading && attempts.length > 0 && (
                 <ul className="space-y-3">
@@ -335,10 +335,10 @@ export default function AdminStudents() {
                     <li key={a.id} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-900 truncate">
-                          {a.series_title ?? 'Série inconnue'}
+                          {a.series_title ?? 'سلسلة غير معروفة'}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {new Date(a.created_at).toLocaleDateString('fr-FR', {
+                          {new Date(a.created_at).toLocaleDateString('ar-MA', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -355,7 +355,7 @@ export default function AdminStudents() {
                           a.passed ? 'bg-success-50 text-success-700' : 'bg-error-50 text-error-600'
                         }`}
                       >
-                        {a.passed ? 'Réussi' : 'Échec'}
+                        {a.passed ? 'ناجح' : 'راسب'}
                       </span>
                     </li>
                   ))}
@@ -375,28 +375,27 @@ export default function AdminStudents() {
                 <Trash2 className="w-6 h-6 text-error-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">Delete student?</h3>
+                <h3 className="font-bold text-slate-900">حذف المترشح؟</h3>
                 <p className="text-sm text-slate-500">
                   {deleteConfirm.name ?? deleteConfirm.email}
                 </p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-6">
-              Their access code will stop working and their exam history will be deleted. This
-              cannot be undone.
+              سيتوقف رمز الدخول عن العمل وسيُحذف سجل امتحاناته. لا يمكن التراجع عن هذا الإجراء.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 px-4 py-2.5 bg-error-600 hover:bg-error-700 text-white rounded-xl font-medium transition-colors"
               >
-                Delete
+                حذف
               </button>
             </div>
           </div>

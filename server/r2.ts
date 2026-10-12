@@ -35,7 +35,7 @@ function requireConfig(): {
   ].filter(Boolean);
 
   if (missing.length > 0) {
-    throw new Error(`R2 upload is not configured. Missing: ${missing.join(', ')}`);
+    throw new Error(`رفع R2 غير مُهيّأ. Missing: ${missing.join(', ')}`);
   }
 
   return {
@@ -78,17 +78,17 @@ export async function createPresignedImageUpload(input: {
   const extension = ALLOWED_TYPES[input.contentType];
   if (!extension) {
     throw new UploadValidationError(
-      `Unsupported image type "${input.contentType}". Allowed: ${Object.keys(ALLOWED_TYPES).join(', ')}`
+      `نوع الصورة غير مدعوم "${input.contentType}". المسموح: ${Object.keys(ALLOWED_TYPES).join(', ')}`
     );
   }
   if (!Number.isFinite(input.size) || input.size <= 0) {
-    throw new UploadValidationError('File is empty.');
+    throw new UploadValidationError('الملف فارغ.');
   }
   if (input.size > MAX_IMAGE_BYTES) {
     throw new UploadValidationError(
-      `File is ${(input.size / 1024 / 1024).toFixed(1)} MB. Maximum is ${
+      `حجم الملف ${(input.size / 1024 / 1024).toFixed(1)} ميغابايت. الحد الأقصى ${
         MAX_IMAGE_BYTES / 1024 / 1024
-      } MB.`
+      } ميغابايت.`
     );
   }
 

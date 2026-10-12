@@ -19,7 +19,7 @@ export default function StudentHistory() {
     async function loadAttempts() {
       const res = await api.get<ExamAttempt[]>('/attempts');
       if (res.error) {
-        setError('Unable to load your results.');
+        setError('تعذّر تحميل نتائجك.');
         setLoading(false);
         return;
       }
@@ -33,13 +33,13 @@ export default function StudentHistory() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <SiteHeader title="Mes résultats" subtitle="Historique de vos examens" />
+      <SiteHeader title="نتائجي" subtitle="سجل امتحاناتك" />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 mt-3">Chargement...</p>
+            <p className="text-slate-400 mt-3">جارٍ التحميل...</p>
           </div>
         )}
 
@@ -52,15 +52,15 @@ export default function StudentHistory() {
         {!loading && !error && attempts.length === 0 && (
           <div className="max-w-md mx-auto bg-white border border-slate-200 rounded-xl p-10 text-center">
             <FileQuestion className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">Aucun résultat pour le moment.</p>
+            <p className="text-slate-500 font-medium">لا توجد نتائج حالياً.</p>
             <p className="text-slate-400 text-sm mt-1">
-              Terminez un examen pour voir vos résultats ici.
+              أكمل امتحاناً لعرض نتائجك هنا.
             </p>
             <Link
               to="/"
               className="mt-6 inline-flex px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
             >
-              Aller aux séries
+              الذهاب إلى السلاسل
             </Link>
           </div>
         )}
@@ -70,15 +70,15 @@ export default function StudentHistory() {
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-white border border-slate-200 rounded-2xl py-5 text-center">
                 <p className="text-3xl font-bold text-slate-900">{attempts.length}</p>
-                <p className="text-xs text-slate-500 font-medium mt-1">Examens passés</p>
+                <p className="text-xs text-slate-500 font-medium mt-1">امتحانات خاضها</p>
               </div>
               <div className="bg-success-50 border border-success-200 rounded-2xl py-5 text-center">
                 <p className="text-3xl font-bold text-success-700">{passedCount}</p>
-                <p className="text-xs text-success-600 font-medium mt-1">Réussis</p>
+                <p className="text-xs text-success-600 font-medium mt-1">ناجحة</p>
               </div>
               <div className="bg-warning-50 border border-warning-200 rounded-2xl py-5 text-center">
                 <p className="text-3xl font-bold text-warning-700">{attempts.length - passedCount}</p>
-                <p className="text-xs text-warning-600 font-medium mt-1">En échec</p>
+                <p className="text-xs text-warning-600 font-medium mt-1">راسبة</p>
               </div>
             </div>
 
@@ -101,10 +101,10 @@ export default function StudentHistory() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-900 truncate">
-                      {a.series_title ?? 'Série inconnue'}
+                      {a.series_title ?? 'سلسلة غير معروفة'}
                     </p>
                     <p className="text-sm text-slate-500 mt-0.5">
-                      {new Date(a.created_at).toLocaleDateString('fr-FR', {
+                      {new Date(a.created_at).toLocaleDateString('ar-MA', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
@@ -113,7 +113,7 @@ export default function StudentHistory() {
                       })}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 text-right">
+                  <div className="flex items-center gap-3 text-end">
                     <div>
                       <p className={`text-2xl font-bold ${a.passed ? 'text-success-600' : 'text-error-600'}`}>
                         {a.score}
@@ -125,7 +125,7 @@ export default function StudentHistory() {
                         a.passed ? 'bg-success-50 text-success-700' : 'bg-error-50 text-error-600'
                       }`}
                     >
-                      {a.passed ? 'Réussi' : 'Échec'}
+                      {a.passed ? 'ناجح' : 'راسب'}
                     </span>
                   </div>
                 </li>

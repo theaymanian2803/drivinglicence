@@ -6,13 +6,13 @@ import {
   Pencil,
   Trash2,
   FileQuestion,
-  ChevronRight,
+  ChevronLeft,
   Loader2,
   AlertCircle,
   Eye,
   EyeOff,
   LogOut,
-  ArrowLeft,
+  ArrowRight,
   Users,
   Signpost,
   Globe,
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
     setLoading(true);
     const res = await api.get<SeriesWithCount[]>('/series?all=true');
     if (res.error) {
-      setError('Unable to load series.');
+      setError('تعذّر تحميل السلاسل.');
       setLoading(false);
       return;
     }
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
     if (!deleteConfirm) return;
     const res = await api.del(`/series/${deleteConfirm.id}`);
     if (res.error) {
-      setError('Failed to delete series.');
+      setError('فشل حذف السلسلة.');
     } else {
       setDeleteConfirm(null);
       loadSeries();
@@ -96,8 +96,8 @@ export default function AdminDashboard() {
               <Car className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Admin Dashboard</h1>
-              <p className="text-xs text-slate-500">Code de la Route — Catégorie B</p>
+              <h1 className="text-lg font-bold text-slate-900">لوحة التحكم</h1>
+              <p className="text-xs text-slate-500">رخصة السياقة — الفئة ب</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -106,28 +106,28 @@ export default function AdminDashboard() {
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             >
               <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Students</span>
+              <span className="hidden sm:inline">المترشحون</span>
             </Link>
             <Link
               to="/admin/signs"
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             >
               <Signpost className="w-4 h-4" />
-              <span className="hidden sm:inline">Panneaux</span>
+              <span className="hidden sm:inline">اللوحات</span>
             </Link>
             <Link
               to="/"
               className="text-sm text-slate-600 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Site</span>
+              <ArrowRight className="w-4 h-4" />
+              <span className="hidden sm:inline">الموقع</span>
             </Link>
             <button
               onClick={signOut}
               className="text-sm text-slate-600 hover:text-error-600 px-3 py-2 rounded-lg hover:bg-error-50 transition-colors flex items-center gap-1.5"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
+              <span className="hidden sm:inline">تسجيل الخروج</span>
             </button>
           </div>
         </div>
@@ -140,11 +140,11 @@ export default function AdminDashboard() {
               <Globe className="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <p className="font-bold text-slate-900">Mode public</p>
+              <p className="font-bold text-slate-900">الوضع العام</p>
               <p className="text-sm text-slate-500">
                 {sitePublic
-                  ? 'La page d’accueil et les panneaux sont visibles sans connexion.'
-                  : 'Seuls les élèves connectés voient la page d’accueil et les panneaux.'}
+                  ? 'الصفحة الرئيسية واللوحات مرئية دون تسجيل الدخول.'
+                  : 'المترشحون المسجّلون فقط يرون الصفحة الرئيسية واللوحات.'}
               </p>
             </div>
           </div>
@@ -155,11 +155,11 @@ export default function AdminDashboard() {
               sitePublic ? 'bg-success-500' : 'bg-slate-300'
             }`}
             aria-pressed={sitePublic ?? false}
-            title={sitePublic ? 'Désactiver le mode public' : 'Activer le mode public'}
+            title={sitePublic ? 'تعطيل الوضع العام' : 'تفعيل الوضع العام'}
           >
             <span
               className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${
-                sitePublic ? 'translate-x-7' : 'translate-x-1'
+                sitePublic ? '-translate-x-7' : '-translate-x-1'
               }`}
             />
           </button>
@@ -168,9 +168,9 @@ export default function AdminDashboard() {
         {/* Section header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Series Management</h2>
+            <h2 className="text-2xl font-bold text-slate-900">إدارة السلاسل</h2>
             <p className="text-slate-500 text-sm mt-1">
-              Create, edit, and manage exam series and their questions.
+              أنشئ وحرّر وأدِر سلاسل الامتحان وأسئلتها.
             </p>
           </div>
           <button
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
             className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">New Series</span>
+            <span className="hidden sm:inline">سلسلة جديدة</span>
           </button>
         </div>
 
@@ -201,8 +201,8 @@ export default function AdminDashboard() {
         {!loading && series.length === 0 && (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
             <FileQuestion className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No series yet.</p>
-            <p className="text-slate-400 text-sm mt-1">Click "New Series" to create your first one.</p>
+            <p className="text-slate-500 font-medium">لا توجد سلاسل بعد.</p>
+            <p className="text-slate-400 text-sm mt-1">انقر على "سلسلة جديدة" لإنشاء أول سلسلة.</p>
           </div>
         )}
 
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
                         ? 'text-success-600 hover:bg-success-50'
                         : 'text-slate-400 hover:bg-slate-100'
                     }`}
-                    title={s.is_active ? 'Active' : 'Inactive'}
+                    title={s.is_active ? 'مفعّلة' : 'معطّلة'}
                   >
                     {s.is_active ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                   </button>
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
 
                 <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
                   <FileQuestion className="w-4 h-4" />
-                  {s.questionCount} questions
+                  {s.questionCount} سؤال
                 </div>
 
                 <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
@@ -252,8 +252,8 @@ export default function AdminDashboard() {
                     to={`/admin/series/${s.id}`}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg text-sm font-medium transition-colors"
                   >
-                    Manage
-                    <ChevronRight className="w-4 h-4" />
+                    إدارة
+                    <ChevronLeft className="w-4 h-4" />
                   </Link>
                   <button
                     onClick={() => {
@@ -298,25 +298,25 @@ export default function AdminDashboard() {
                 <Trash2 className="w-6 h-6 text-error-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">Delete series?</h3>
+                <h3 className="font-bold text-slate-900">حذف السلسلة؟</h3>
                 <p className="text-sm text-slate-500">"{deleteConfirm.title}"</p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-6">
-              This will permanently delete the series and all its questions. This cannot be undone.
+              سيؤدي هذا إلى حذف السلسلة وكل أسئلتها نهائياً. لا يمكن التراجع عن هذا الإجراء.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 px-4 py-2.5 bg-error-600 hover:bg-error-700 text-white rounded-xl font-medium transition-colors"
               >
-                Delete
+                حذف
               </button>
             </div>
           </div>

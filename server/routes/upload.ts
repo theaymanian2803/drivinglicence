@@ -15,10 +15,10 @@ uploadRoutes.post('/', async (c) => {
   const size = Number(body.size);
 
   if (!contentType) {
-    return c.json({ error: 'contentType is required' }, 400);
+    return c.json({ error: 'نوع المحتوى مطلوب' }, 400);
   }
   if (!Number.isFinite(size)) {
-    return c.json({ error: 'size must be a number of bytes' }, 400);
+    return c.json({ error: 'يجب أن يكون الحجم عدداً بالبايت' }, 400);
   }
 
   try {
@@ -29,9 +29,9 @@ uploadRoutes.post('/', async (c) => {
       return c.json({ error: err.message }, 400);
     }
     if (err instanceof Error && /Missing:/.test(err.message)) {
-      return c.json({ error: 'Image uploads are not configured on the server.' }, 503);
+      return c.json({ error: 'رفع الصور غير مُهيّأ على الخادم.' }, 503);
     }
     console.error('Failed to presign R2 upload:', err);
-    return c.json({ error: 'Could not prepare the upload. Try again.' }, 500);
+    return c.json({ error: 'تعذّر تجهيز الرفع. حاول مجدداً.' }, 500);
   }
 });

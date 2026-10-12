@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
-  ArrowLeft,
+  ArrowRight,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -29,7 +29,7 @@ export default function AdminSigns() {
     setLoading(true);
     const res = await api.get<TrafficSign[]>('/signs?all=true');
     if (res.error) {
-      setError('Unable to load signs.');
+      setError('تعذّر تحميل اللوحات.');
       setLoading(false);
       return;
     }
@@ -57,7 +57,7 @@ export default function AdminSigns() {
     if (!deleteConfirm) return;
     const res = await api.del(`/signs/${deleteConfirm.id}`);
     if (res.error) {
-      setError('Failed to delete sign.');
+      setError('فشل حذف اللوحة.');
     } else {
       setDeleteConfirm(null);
       loadSigns();
@@ -72,7 +72,7 @@ export default function AdminSigns() {
     [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
     const res = await api.patch('/signs/reorder', { ids: reordered.map((item) => item.id) });
     if (res.error) {
-      setError('Failed to reorder signs.');
+      setError('فشل إعادة ترتيب اللوحات.');
       return;
     }
     loadSigns();
@@ -87,12 +87,12 @@ export default function AdminSigns() {
               to="/admin/dashboard"
               className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Panneaux de signalisation</h1>
+              <h1 className="text-lg font-bold text-slate-900">لوحات المرور</h1>
               <p className="text-xs text-slate-500">
-                {signs.length} panneau{signs.length !== 1 ? 'x' : ''}
+                {signs.length} لوحة
               </p>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function AdminSigns() {
             className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Ajouter un panneau</span>
+            <span className="hidden sm:inline">إضافة لوحة</span>
           </button>
         </div>
       </header>
@@ -126,9 +126,9 @@ export default function AdminSigns() {
         {!loading && signs.length === 0 && (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
             <ImageIcon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">Aucun panneau pour le moment.</p>
+            <p className="text-slate-500 font-medium">لا توجد لوحات حالياً.</p>
             <p className="text-slate-400 text-sm mt-1">
-              Clique sur "Ajouter un panneau" pour créer le premier.
+              انقر على "إضافة لوحة" لإنشاء أول لوحة.
             </p>
           </div>
         )}
@@ -165,7 +165,7 @@ export default function AdminSigns() {
                             ? 'text-success-600 hover:bg-success-50'
                             : 'text-slate-400 hover:bg-slate-100'
                         }`}
-                        title={s.is_active ? 'Visible' : 'Masqué'}
+                        title={s.is_active ? 'ظاهرة' : 'مخفية'}
                       >
                         {s.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                       </button>
@@ -177,7 +177,7 @@ export default function AdminSigns() {
                     {s.scenario_image_url && (
                       <p className="flex items-center gap-1 text-xs text-success-600 mt-1">
                         <ImageIcon className="w-3 h-3" />
-                        Image de situation
+                        صورة الوضعية
                       </p>
                     )}
                   </div>
@@ -198,7 +198,7 @@ export default function AdminSigns() {
                       <ChevronDown className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex flex-col gap-1 flex-shrink-0 border-l border-slate-100 pl-2">
+                  <div className="flex flex-col gap-1 flex-shrink-0 border-s border-slate-100 ps-2">
                     <button
                       onClick={() => {
                         setEditingSign(s);
@@ -241,25 +241,25 @@ export default function AdminSigns() {
                 <Trash2 className="w-6 h-6 text-error-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">Supprimer ce panneau ?</h3>
+                <h3 className="font-bold text-slate-900">حذف هذه اللوحة؟</h3>
                 <p className="text-sm text-slate-500">"{deleteConfirm.title}"</p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-6">
-              Ce panneau sera définitivement supprimé. Cette action est irréversible.
+              ستُحذف هذه اللوحة نهائياً. لا يمكن التراجع عن هذا الإجراء.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
               >
-                Annuler
+                إلغاء
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 px-4 py-2.5 bg-error-600 hover:bg-error-700 text-white rounded-xl font-medium transition-colors"
               >
-                Supprimer
+                حذف
               </button>
             </div>
           </div>

@@ -12,9 +12,9 @@ interface Props {
 }
 
 const TIMER_OPTIONS: { value: 10 | 20 | 30; label: string }[] = [
-  { value: 10, label: '10 seconds' },
-  { value: 20, label: '20 seconds' },
-  { value: 30, label: '30 seconds' },
+  { value: 10, label: '10 ثوانٍ' },
+  { value: 20, label: '20 ثانية' },
+  { value: 30, label: '30 ثانية' },
 ];
 
 const CATEGORIES = ['A', 'B', 'C', 'D', 'E'];
@@ -58,14 +58,14 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
 
   const optionGroups = [
     {
-      label: questionText2.trim() ? 'Question 1 — Options 1 & 2' : 'Answer Options',
+      label: questionText2.trim() ? 'السؤال 1 — الخياران 1 و2' : 'خيارات الإجابة',
       options: [
         { num: 1, value: option1, set: setOption1 },
         { num: 2, value: option2, set: setOption2 },
       ],
     },
     {
-      label: questionText2.trim() ? 'Question 2 — Options 3 & 4' : 'Options 3 & 4 (optional)',
+      label: questionText2.trim() ? 'السؤال 2 — الخياران 3 و4' : 'الخياران 3 و4 (اختياري)',
       options: [
         { num: 3, value: option3, set: setOption3 },
         { num: 4, value: option4, set: setOption4 },
@@ -78,19 +78,19 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
     setError(null);
 
     if (!questionText.trim()) {
-      setError('Question text is required.');
+      setError('نص السؤال مطلوب.');
       return;
     }
     if (!option1.trim() || !option2.trim()) {
-      setError('At least options 1 and 2 are required.');
+      setError('الخياران 1 و2 مطلوبان على الأقل.');
       return;
     }
     if (correctAnswers.length === 0) {
-      setError('Select at least one correct answer.');
+      setError('اختر إجابة صحيحة واحدة على الأقل.');
       return;
     }
     if (correctAnswers.length > 2) {
-      setError('Maximum 2 correct answers allowed.');
+      setError('يُسمح بإجابتين صحيحتين كحد أقصى.');
       return;
     }
     const allOptions = [
@@ -102,7 +102,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
     for (const num of correctAnswers) {
       const opt = allOptions.find((o) => o.num === num);
       if (opt && !opt.value.trim()) {
-        setError(`Option ${num} is marked correct but is empty.`);
+        setError(`الخيار ${num} محدَّد كصحيح لكنه فارغ.`);
         return;
       }
     }
@@ -144,7 +144,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <h2 className="text-lg font-bold text-slate-900">
-            {question ? 'Edit Question' : 'Add Question'}
+            {question ? 'تعديل السؤال' : 'إضافة سؤال'}
           </h2>
           <button
             onClick={onClose}
@@ -167,14 +167,14 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
           <ImageUpload
             value={imageUrl}
             onChange={setImageUrl}
-            label="Scenario Image"
+            label="صورة الوضعية"
           />
 
           {/* Audio URL */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
               <Music className="w-4 h-4 text-slate-400" />
-              Question Audio URL (optional)
+              رابط صوت السؤال (اختياري)
             </label>
             <input
               type="url"
@@ -188,9 +188,9 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
           {/* Primary Question Text */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Question Text 1 <span className="text-error-500">*</span>
-              <span className="text-slate-400 font-normal text-xs ml-2">
-                For options 1 &amp; 2 (supports Arabic and French)
+              نص السؤال 1 <span className="text-error-500">*</span>
+              <span className="text-slate-400 font-normal text-xs ms-2">
+                للخيارين 1 و2 (يدعم العربية والفرنسية)
               </span>
             </label>
             <textarea
@@ -198,7 +198,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
               value={questionText}
               onChange={(e) => setQuestionText(e.target.value)}
               rows={2}
-              placeholder="Enter the first question..."
+              placeholder="أدخل السؤال الأول..."
               dir="auto"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
             />
@@ -207,16 +207,16 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
           {/* Second Question Text (optional) */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Question Text 2
-              <span className="text-slate-400 font-normal text-xs ml-2">
-                Optional — for options 3 &amp; 4 when the question has two sub-questions
+              نص السؤال 2
+              <span className="text-slate-400 font-normal text-xs ms-2">
+                اختياري — للخيارين 3 و4 عندما يتضمن السؤال سؤالين فرعيين
               </span>
             </label>
             <textarea
               value={questionText2}
               onChange={(e) => setQuestionText2(e.target.value)}
               rows={2}
-              placeholder="Enter a second question if options 3 & 4 have a different prompt..."
+              placeholder="أدخل سؤالاً ثانياً إذا كان للخيارين 3 و4 نص مختلف..."
               dir="auto"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
             />
@@ -227,8 +227,8 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
             <div key={gi}>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 {group.label}
-                <span className="text-slate-400 font-normal text-xs ml-2">
-                  Check the box for correct answer(s)
+                <span className="text-slate-400 font-normal text-xs ms-2">
+                  حدِّد المربع للإجابة/الإجابات الصحيحة
                 </span>
               </label>
               <div className="space-y-2.5">
@@ -253,7 +253,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
                       type="text"
                       value={opt.value}
                       onChange={(e) => opt.set(e.target.value)}
-                      placeholder={`Option ${opt.num}${opt.num <= 2 ? ' *' : ''}`}
+                      placeholder={`الخيار ${opt.num}${opt.num <= 2 ? ' *' : ''}`}
                       dir="auto"
                       className={`flex-1 px-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
                         correctAnswers.includes(opt.num)
@@ -271,7 +271,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Timer Duration
+                مدة المؤقّت
               </label>
               <select
                 value={timerDuration}
@@ -287,7 +287,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                License Category
+                فئة الرخصة
               </label>
               <select
                 value={category}
@@ -296,7 +296,7 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
-                    Category {c}
+                    الفئة {c}
                   </option>
                 ))}
               </select>
@@ -310,14 +310,14 @@ export default function QuestionFormModal({ seriesId, question, onClose, onSaved
               onClick={onClose}
               className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
             >
-              Cancel
+              إلغاء
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : question ? 'Save' : 'Add Question'}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : question ? 'حفظ' : 'إضافة سؤال'}
             </button>
           </div>
         </form>

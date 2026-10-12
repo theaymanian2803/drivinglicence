@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Car,
-  ChevronRight,
+  ChevronLeft,
   Clock,
   FileQuestion,
   Loader2,
@@ -27,7 +27,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <SiteHeader title="Code de la Route" subtitle="Catégorie B — Maroc" />
+      <SiteHeader title="رخصة السياقة" subtitle="الفئة ب — المغرب" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Hero */}
@@ -36,11 +36,10 @@ export default function Landing() {
             <Car className="w-9 h-9 text-white" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-4">
-            Prépare le Code de la Route
+            استعد لرخصة السياقة
           </h1>
           <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-            Entraîne-toi avec des séries d'examens chronométrées et apprends la
-            signification de chaque panneau de signalisation.
+            تدرّب مع سلاسل امتحانات موقوتة وتعرّف على معنى كل لوحة من لوحات المرور.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -48,14 +47,14 @@ export default function Landing() {
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold shadow-md transition-colors"
             >
               <Signpost className="w-5 h-5" />
-              Explorer les panneaux
+              استكشف اللوحات
             </Link>
             <Link
               to="/login"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-primary-300 text-slate-700 rounded-xl font-semibold shadow-sm transition-colors"
             >
               <Sparkles className="w-5 h-5 text-primary-600" />
-              Espace élève
+              فضاء المترشح
             </Link>
           </div>
         </section>
@@ -63,12 +62,12 @@ export default function Landing() {
         {/* Series */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">Séries d'examen</h2>
+            <h2 className="text-2xl font-bold text-slate-900">سلاسل الامتحان</h2>
             <Link
               to="/login"
               className="text-sm font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
             >
-              Se connecter <ChevronRight className="w-4 h-4" />
+              تسجيل الدخول <ChevronLeft className="w-4 h-4" />
             </Link>
           </div>
 
@@ -80,7 +79,7 @@ export default function Landing() {
 
           {!loading && series.length === 0 && (
             <div className="max-w-md mx-auto bg-white border border-slate-200 rounded-xl p-10 text-center">
-              <p className="text-slate-500 font-medium">Aucune série disponible pour le moment.</p>
+              <p className="text-slate-500 font-medium">لا توجد سلاسل متاحة حالياً.</p>
             </div>
           )}
 
@@ -107,11 +106,11 @@ export default function Landing() {
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <FileQuestion className="w-4 h-4" />
-                        {s.question_count} questions
+                        {s.question_count} سؤال
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Clock className="w-4 h-4" />
-                        ~{Math.ceil((s.question_count * 20) / 60)} min
+                        ~{Math.ceil((s.question_count * 20) / 60)} دقيقة
                       </span>
                     </div>
                     <Lock className="w-5 h-5 text-slate-300" />
@@ -120,7 +119,7 @@ export default function Landing() {
                     to="/login"
                     className="mt-4 block text-center px-4 py-2.5 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-xl text-sm font-semibold transition-colors"
                   >
-                    Se connecter pour passer l'examen
+                    سجّل الدخول لخوض الامتحان
                   </Link>
                 </div>
               ))}

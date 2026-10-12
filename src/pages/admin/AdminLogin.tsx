@@ -41,8 +41,8 @@ export default function AdminLogin() {
           <div className="inline-flex w-16 h-16 bg-primary-600 rounded-2xl items-center justify-center shadow-xl mb-4">
             <Car className="w-9 h-9 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">Code de la Route — Catégorie B</p>
+          <h1 className="text-2xl font-bold text-white">لوحة التحكم</h1>
+          <p className="text-slate-400 text-sm mt-1">رخصة السياقة — الفئة ب</p>
         </div>
 
         {/* Card */}
@@ -56,15 +56,15 @@ export default function AdminLogin() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">البريد الإلكتروني</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   placeholder="admin@example.com"
                 />
               </div>
@@ -72,16 +72,16 @@ export default function AdminLogin() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Mot de passe
+                كلمة المرور
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -95,7 +95,7 @@ export default function AdminLogin() {
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                'Se connecter'
+                'تسجيل الدخول'
               )}
             </button>
           </form>
@@ -103,15 +103,15 @@ export default function AdminLogin() {
           {import.meta.env.DEV && (
             <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Dev access
+                دخول المطوّر
               </p>
               <dl className="mt-2 space-y-1 text-sm">
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-500">Email</dt>
+                  <dt className="text-slate-500">البريد الإلكتروني</dt>
                   <dd className="font-mono text-slate-900">{DEV_ADMIN_EMAIL}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-500">Mot de passe</dt>
+                  <dt className="text-slate-500">كلمة المرور</dt>
                   <dd className="font-mono text-slate-900">{DEV_ADMIN_PASSWORD}</dd>
                 </div>
               </dl>
@@ -123,7 +123,7 @@ export default function AdminLogin() {
                 }}
                 className="mt-3 w-full rounded-xl border border-slate-300 bg-white py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
               >
-                Remplir les champs
+                ملء الحقول
               </button>
             </div>
           )}
@@ -131,7 +131,7 @@ export default function AdminLogin() {
 
         <p className="text-center text-slate-500 text-sm mt-6">
           <a href="/" className="hover:text-white transition-colors">
-            ← Retour au site
+            → العودة إلى الموقع
           </a>
         </p>
       </div>

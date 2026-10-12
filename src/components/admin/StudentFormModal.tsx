@@ -19,7 +19,7 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Email is required.');
+      setError('البريد الإلكتروني مطلوب.');
       return;
     }
     setSaving(true);
@@ -46,7 +46,7 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError('Copy failed — select the code manually.');
+      setError('فشل النسخ — انسخ الرمز يدوياً.');
     }
   }
 
@@ -55,7 +55,7 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">New Student</h2>
+          <h2 className="text-lg font-bold text-slate-900">مترشح جديد</h2>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -72,9 +72,9 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
                 <KeyRound className="w-6 h-6 text-success-600" />
               </div>
               <div>
-                <p className="font-bold text-slate-900">Student created!</p>
+                <p className="font-bold text-slate-900">تم إنشاء المترشح!</p>
                 <p className="text-sm text-slate-500">
-                  Give this access code to {created.email}
+                  أعطِ رمز الدخول هذا إلى {created.email}
                 </p>
               </div>
             </div>
@@ -86,21 +86,21 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
               <button
                 onClick={handleCopy}
                 className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                title="Copy code"
+                title="نسخ الرمز"
               >
                 {copied ? <Check className="w-5 h-5 text-success-600" /> : <Copy className="w-5 h-5" />}
               </button>
             </div>
 
             {copied && (
-              <p className="text-sm text-success-600 mb-4">Code copied to clipboard.</p>
+              <p className="text-sm text-success-600 mb-4">تم نسخ الرمز.</p>
             )}
 
             <button
               onClick={onClose}
               className="w-full px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
             >
-              Done
+              تم
             </button>
           </div>
         ) : (
@@ -115,20 +115,20 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Name
+                الاسم
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ahmed Benali"
+                placeholder="مثال: أحمد بنعلي"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Email <span className="text-error-500">*</span>
+                البريد الإلكتروني <span className="text-error-500">*</span>
               </label>
               <input
                 type="email"
@@ -146,14 +146,14 @@ export default function StudentFormModal({ onClose, onCreated }: Props) {
                 onClick={onClose}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="flex-1 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create'}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'إنشاء'}
               </button>
             </div>
           </form>

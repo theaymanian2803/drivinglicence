@@ -13,10 +13,6 @@ import type { RevisionSummary } from '@/types';
 
 type Tab = 'to_review' | 'corrected';
 
-function attemptLabel(n: number): string {
-  return n === 1 ? '1re' : `${n}e`;
-}
-
 export default function Revision() {
   const navigate = useNavigate();
   const [summary, setSummary] = useState<RevisionSummary | null>(null);
@@ -28,7 +24,7 @@ export default function Revision() {
     async function load() {
       const res = await api.get<RevisionSummary>('/revision');
       if (res.error) {
-        setError('Unable to load your revision list.');
+        setError('تعذّر تحميل قائمة المراجعة.');
         setLoading(false);
         return;
       }
@@ -45,13 +41,13 @@ export default function Revision() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <SiteHeader title="Mes erreurs" subtitle="Revois les questions que tu as manquées" />
+      <SiteHeader title="أخطائي" subtitle="راجع الأسئلة التي أخطأت فيها" />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 mt-3">Chargement...</p>
+            <p className="text-slate-400 mt-3">جارٍ التحميل...</p>
           </div>
         )}
 
@@ -70,9 +66,9 @@ export default function Revision() {
                     <Target className="w-6 h-6 text-error-600" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Points faibles</p>
+                    <p className="font-bold text-slate-900">نقاط الضعف</p>
                     <p className="text-sm text-slate-500">
-                      Tes catégories où tu rates le plus de questions
+                      الفئات التي تخطئ فيها أكثر
                     </p>
                   </div>
                 </div>
@@ -81,11 +77,10 @@ export default function Revision() {
                     <li key={w.category}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm font-semibold text-slate-700">
-                          Catégorie {w.category}
+                          الفئة {w.category}
                         </span>
                         <span className="text-xs text-slate-500">
-                          {w.question_count} question{w.question_count > 1 ? 's' : ''} ·{' '}
-                          {w.wrong_total} erreur{w.wrong_total > 1 ? 's' : ''}
+                          {w.question_count} سؤال · {w.wrong_total} خطأ
                         </span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
@@ -111,7 +106,7 @@ export default function Revision() {
                 }`}
               >
                 <RefreshCw className="w-4 h-4" />
-                À revoir ({toReview.length})
+                للمراجعة ({toReview.length})
               </button>
               <button
                 onClick={() => setTab('corrected')}
@@ -122,7 +117,7 @@ export default function Revision() {
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Corrigées ({corrected.length})
+                مصحّحة ({corrected.length})
               </button>
             </div>
 
@@ -131,15 +126,15 @@ export default function Revision() {
                 {toReview.length === 0 ? (
                   <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center animate-fade-in">
                     <CheckCircle2 className="w-12 h-12 text-success-400 mx-auto mb-4" />
-                    <p className="text-slate-500 font-medium">Rien à revoir pour l'instant!</p>
+                    <p className="text-slate-500 font-medium">لا شيء للمراجعة حالياً!</p>
                     <p className="text-slate-400 text-sm mt-1">
-                      Ton travail est à jour — continue avec les séries.
+                      مراجعتك محدّثة — واصل مع السلاسل.
                     </p>
                     <Link
                       to="/"
                       className="mt-6 inline-flex px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
                     >
-                      Aller aux séries
+                      الذهاب إلى السلاسل
                     </Link>
                   </div>
                 ) : (
@@ -150,10 +145,10 @@ export default function Revision() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-slate-900">
-                          {toReview.length} question{toReview.length > 1 ? 's' : ''} à revoir
+                          {toReview.length} سؤال للمراجعة
                         </p>
                         <p className="text-sm text-slate-500">
-                          Passe une session pour les retravailler
+                          ابدأ جلسة لإعادة العمل عليها
                         </p>
                       </div>
                       <button
@@ -163,7 +158,7 @@ export default function Revision() {
                         className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors shadow-md flex items-center gap-2"
                       >
                         <BookOpen className="w-4 h-4" />
-                        Commencer
+                        ابدأ
                       </button>
                     </div>
 
@@ -197,9 +192,9 @@ export default function Revision() {
                 {corrected.length === 0 ? (
                   <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center animate-fade-in">
                     <CheckCircle2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 font-medium">Aucune question corrigée pour l'instant.</p>
+                    <p className="text-slate-500 font-medium">لا توجد أسئلة مصحّحة حالياً.</p>
                     <p className="text-slate-400 text-sm mt-1">
-                      Les questions que tu réussis en révision apparaîtront ici.
+                      ستظهر هنا الأسئلة التي تنجح فيها أثناء المراجعة.
                     </p>
                   </div>
                 ) : (
@@ -215,8 +210,8 @@ export default function Revision() {
                             <p className="text-sm text-slate-700 line-clamp-2">{q.question_text}</p>
                             {q.corrected_at && (
                               <p className="text-xs text-slate-500 mt-0.5">
-                                Obtenue à la {attemptLabel(q.wrong_count + 1)} fois ·{' '}
-                                {new Date(q.corrected_at).toLocaleDateString('fr-FR')}
+                                أُجيبت في المحاولة رقم {q.wrong_count + 1} ·{' '}
+                                {new Date(q.corrected_at).toLocaleDateString('ar-MA')}
                               </p>
                             )}
                           </div>

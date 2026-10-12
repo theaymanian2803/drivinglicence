@@ -26,13 +26,13 @@ signRoutes.get('/', optionalUser, async (c) => {
 
 signRoutes.get('/:id', optionalUser, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid sign id' }, 400);
+  if (!id) return c.json({ error: 'معرّف اللوحة غير صالح' }, 400);
   const result = await db.execute({ sql: 'SELECT * FROM signs WHERE id = ?', args: [id] });
-  if (result.rows.length === 0) return c.json({ error: 'Sign not found' }, 404);
+  if (result.rows.length === 0) return c.json({ error: 'اللوحة غير موجودة' }, 404);
   const row = result.rows[0] as Record<string, unknown>;
   const user = c.get('user') as import('../auth').AuthUser | undefined;
   if (user?.role !== 'admin' && Number(row.is_active) !== 1) {
-    return c.json({ error: 'Sign not found' }, 404);
+    return c.json({ error: 'اللوحة غير موجودة' }, 404);
   }
   return c.json({ data: toSign(row) });
 });
@@ -40,7 +40,7 @@ signRoutes.get('/:id', optionalUser, async (c) => {
 signRoutes.patch('/reorder', requireAdmin, async (c) => {
   const body = await c.req.json<{ ids?: unknown }>().catch(() => ({} as { ids?: unknown }));
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) {
-    return c.json({ error: 'Invalid ids payload' }, 400);
+    return c.json({ error: 'معرّف اللوحات المُرسل غير صالح' }, 400);
   }
   const statements = body.ids.map((id, index) => ({
     sql: 'UPDATE signs SET position = ? WHERE id = ?',
@@ -52,9 +52,9 @@ signRoutes.patch('/reorder', requireAdmin, async (c) => {
 
 signRoutes.post('/', requireAdmin, async (c) => {
   const body = await c.req.json<SignBody>().catch(() => ({} as SignBody));
-  if (!body.title?.trim()) return c.json({ error: 'Title is required' }, 400);
-  if (!body.image_url?.trim()) return c.json({ error: 'Sign image is required' }, 400);
-  if (!body.description?.trim()) return c.json({ error: 'Description is required' }, 400);
+  if (!body.title?.trim()) return c.json({ error: 'العنوان مطلوب' }, 400);
+  if (!body.image_url?.trim()) return c.json({ error: 'صورة اللوحة مطلوبة' }, 400);
+  if (!body.description?.trim()) return c.json({ error: 'الوصف مطلوب' }, 400);
 
   const pos = await db.execute({
     sql: 'SELECT COALESCE(MAX(position), -1) + 1 AS next_position FROM signs',
@@ -86,11 +86,11 @@ signRoutes.post('/', requireAdmin, async (c) => {
 
 signRoutes.put('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid sign id' }, 400);
+  if (!id) return c.json({ error: 'معرّف اللوحة غير صالح' }, 400);
   const body = await c.req.json<SignBody>().catch(() => ({} as SignBody));
-  if (!body.title?.trim()) return c.json({ error: 'Title is required' }, 400);
-  if (!body.image_url?.trim()) return c.json({ error: 'Sign image is required' }, 400);
-  if (!body.description?.trim()) return c.json({ error: 'Description is required' }, 400);
+  if (!body.title?.trim()) return c.json({ error: 'العنوان مطلوب' }, 400);
+  if (!body.image_url?.trim()) return c.json({ error: 'صورة اللوحة مطلوبة' }, 400);
+  if (!body.description?.trim()) return c.json({ error: 'الوصف مطلوب' }, 400);
 
   const category = SIGN_CATEGORIES.includes(body.category as SignCategory)
     ? (body.category as string)
@@ -110,14 +110,14 @@ signRoutes.put('/:id', requireAdmin, async (c) => {
     ],
   });
   const updated = await db.execute({ sql: 'SELECT * FROM signs WHERE id = ?', args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: 'Sign not found' }, 404);
+  if (updated.rows.length === 0) return c.json({ error: 'اللوحة غير موجودة' }, 404);
   return c.json({ data: toSign(updated.rows[0] as Record<string, unknown>) });
 });
 
 signRoutes.delete('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid sign id' }, 400);
+  if (!id) return c.json({ error: 'معرّف اللوحة غير صالح' }, 400);
   const result = await db.execute({ sql: 'DELETE FROM signs WHERE id = ?', args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: 'Sign not found' }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: 'اللوحة غير موجودة' }, 404);
   return c.json({ data: { ok: true } });
 });

@@ -16,7 +16,7 @@ const INSERT_COLUMNS =
 questionRoutes.patch('/reorder', requireAdmin, async (c) => {
   const body = await c.req.json<{ ids?: unknown }>().catch(() => ({} as { ids?: unknown }));
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) {
-    return c.json({ error: 'Invalid ids payload' }, 400);
+    return c.json({ error: 'معرّف الأسئلة المُرسل غير صالح' }, 400);
   }
   const statements = body.ids.map((id, index) => ({
     sql: 'UPDATE questions SET position = ? WHERE id = ?',
@@ -29,7 +29,7 @@ questionRoutes.patch('/reorder', requireAdmin, async (c) => {
 questionRoutes.post('/', requireAdmin, async (c) => {
   const body = await c.req.json<QuestionBody>().catch(() => ({} as QuestionBody));
   if (!body.series_id || !body.question_text?.trim()) {
-    return c.json({ error: 'series_id and question_text are required' }, 400);
+    return c.json({ error: 'معرّف السلسلة ونص السؤال مطلوبان' }, 400);
   }
   const pos = await db.execute({
     sql: 'SELECT COALESCE(MAX(position), -1) + 1 AS next_position FROM questions WHERE series_id = ?',
@@ -66,10 +66,10 @@ questionRoutes.post('/', requireAdmin, async (c) => {
 
 questionRoutes.put('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid question id' }, 400);
+  if (!id) return c.json({ error: 'معرّف السؤال غير صالح' }, 400);
   const body = await c.req.json<QuestionBody>().catch(() => ({} as QuestionBody));
   if (!body.question_text?.trim() || !body.series_id) {
-    return c.json({ error: 'question_text and series_id are required' }, 400);
+    return c.json({ error: 'نص السؤال ومعرّف السلسلة مطلوبان' }, 400);
   }
   const now = new Date().toISOString();
   const args: (string | number | null)[] = [
@@ -93,14 +93,14 @@ questionRoutes.put('/:id', requireAdmin, async (c) => {
     args,
   });
   const updated = await db.execute({ sql: 'SELECT * FROM questions WHERE id = ?', args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: 'Question not found' }, 404);
+  if (updated.rows.length === 0) return c.json({ error: 'السؤال غير موجود' }, 404);
   return c.json({ data: toQuestion(updated.rows[0] as Record<string, unknown>) });
 });
 
 questionRoutes.delete('/:id', requireAdmin, async (c) => {
   const id = c.req.param('id');
-  if (!id) return c.json({ error: 'Invalid question id' }, 400);
+  if (!id) return c.json({ error: 'معرّف السؤال غير صالح' }, 400);
   const result = await db.execute({ sql: 'DELETE FROM questions WHERE id = ?', args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: 'Question not found' }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: 'السؤال غير موجود' }, 404);
   return c.json({ data: { ok: true } });
 });

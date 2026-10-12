@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft,
+  ArrowRight,
   RotateCcw,
   Volume2,
   VolumeX,
@@ -118,10 +118,10 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
         }
         setSeries({
           id: 'revision',
-          title: 'Mes erreurs',
-          description: 'Révision des questions précédemment manquées',
+          title: 'أخطائي',
+          description: 'مراجعة الأسئلة التي أخطأت فيها سابقاً',
           is_active: true,
-          category: 'Révision',
+          category: 'المراجعة',
           pass_score: 1,
           required_questions: 0,
           created_at: '',
@@ -136,17 +136,17 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
       if (officialMode) {
         const res = await api.get<OfficialExamStart>('/exams/official');
         if (res.error) {
-          setError(res.error.message || "Impossible de charger l'examen officiel.");
+          setError(res.error.message || 'تعذّر تحميل الامتحان الرسمي.');
           setPhase('exam');
           return;
         }
         const data = res.data;
         setSeries({
           id: 'official',
-          title: 'Examen officiel',
-          description: data.question_count + ' questions tirées de toute la banque',
+          title: 'الامتحان الرسمي',
+          description: data.question_count + ' سؤال من كامل البنك',
           is_active: true,
-          category: 'Officiel',
+          category: 'رسمي',
           pass_score: data.pass_score,
           required_questions: data.question_count,
           created_at: '',
@@ -168,18 +168,18 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
         api.get<Question[]>(`/series/${seriesId}/questions`),
       ]);
       if (seriesRes.error || questionsRes.error) {
-        setError('Unable to load exam data.');
+        setError('تعذّر تحميل بيانات الامتحان.');
         setPhase('exam');
         return;
       }
       if (!seriesRes.data) {
-        setError('Series not found.');
+        setError('السلسلة غير موجودة.');
         setPhase('exam');
         return;
       }
       const qData = questionsRes.data;
       if (!qData || qData.length === 0) {
-        setError('This series has no questions yet.');
+        setError('لا تحتوي هذه السلسلة على أسئلة بعد.');
         setPhase('exam');
         return;
       }
@@ -369,7 +369,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
         <Loader2 className="w-10 h-10 text-primary-400 animate-spin" />
-        <p className="text-slate-400 mt-4">Chargement de l'examen...</p>
+        <p className="text-slate-400 mt-4">جارٍ تحميل الامتحان...</p>
       </div>
     );
   }
@@ -384,7 +384,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           onClick={() => navigate(homePath)}
           className="mt-4 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
         >
-          Retour à l'accueil
+          العودة إلى الصفحة الرئيسية
         </button>
       </div>
     );
@@ -406,9 +406,9 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 <div className="inline-flex w-20 h-20 bg-white/20 backdrop-blur rounded-full items-center justify-center mb-4">
                   <BookOpen className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-1">Révision terminée</h2>
+                <h2 className="text-3xl font-bold text-white mb-1">انتهت المراجعة</h2>
                 <p className="text-white/80 text-lg">
-                  {score} bonne{score > 1 ? 's' : ''} réponse{score > 1 ? 's' : ''} sur {totalQuestions}
+                  {score} إجابة صحيحة من {totalQuestions}
                 </p>
               </div>
 
@@ -454,8 +454,8 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
 
                 {revisionSummary && (
                   <div className="text-center text-sm text-slate-600 mb-6">
-                    {remaining} question{remaining === 1 ? '' : 's'} encore à revoir
-                    {mastered !== null ? ` · ${mastered} maîtrisée${mastered === 1 ? '' : 's'}` : ''}
+                    {remaining} سؤال للمراجعة
+                    {mastered !== null ? ` · ${mastered} متقنة` : ''}
                   </div>
                 )}
 
@@ -465,14 +465,14 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
                   >
                     <BookOpen className="w-5 h-5" />
-                    Mes erreurs
+                    أخطائي
                   </button>
                   <button
                     onClick={() => window.location.reload()}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
                   >
                     <RotateCcw className="w-5 h-5" />
-                    Recommencer
+                    إعادة المحاولة
                   </button>
                 </div>
               </div>
@@ -497,10 +497,10 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 <Trophy className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-white mb-2">
-                {passed ? 'Félicitations!' : 'Désolé'}
+                {passed ? 'تهانينا!' : 'عذراً'}
               </h2>
               <p className="text-white/80 text-lg">
-                {passed ? 'Vous avez réussi le test.' : "Vous n'avez pas atteint le score requis."}
+                {passed ? 'لقد نجحت في الاختبار.' : 'لم تصل إلى العلامة المطلوبة.'}
               </p>
             </div>
 
@@ -519,35 +519,31 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 />
               </div>
               <p className="text-sm text-slate-500 mb-2">
-                {percentage}% — Score minimum: {passScore}/{totalQuestions}
+                {percentage}% — العلامة الدنيا: {passScore}/{totalQuestions}
               </p>
               <p className={`text-sm font-medium mb-6 ${passed ? 'text-success-600' : 'text-error-600'}`}>
                 {passed
-                  ? `Seuil atteint — ${score - passScore} ${
-                      score - passScore === 1 ? 'réponse' : 'réponses'
-                    } au-dessus du minimum.`
-                  : `Encore ${passScore - score} ${
-                      passScore - score === 1 ? 'réponse correcte' : 'réponses correctes'
-                    } pour réussir.`}
+                  ? `تم تجاوز العتبة — ${score - passScore} إجابة فوق الحد الأدنى.`
+                  : `يتبقى ${passScore - score} إجابة صحيحة للنجاح.`}
               </p>
 
               <div className="grid grid-cols-3 gap-4 mb-8">
                 <div className="bg-success-50 border border-success-200 rounded-xl py-4">
                   <CheckCircle2 className="w-6 h-6 text-success-600 mx-auto mb-1" />
                   <p className="text-2xl font-bold text-success-700">{score}</p>
-                  <p className="text-xs text-success-600 font-medium">Correctes</p>
+                  <p className="text-xs text-success-600 font-medium">صحيحة</p>
                 </div>
                 <div className="bg-error-50 border border-error-200 rounded-xl py-4">
                   <XCircle className="w-6 h-6 text-error-600 mx-auto mb-1" />
                   <p className="text-2xl font-bold text-error-700">{totalQuestions - score}</p>
-                  <p className="text-xs text-error-600 font-medium">Incorrectes</p>
+                  <p className="text-xs text-error-600 font-medium">خاطئة</p>
                 </div>
                 <div className="bg-warning-50 border border-warning-200 rounded-xl py-4">
                   <AlertCircle className="w-6 h-6 text-warning-600 mx-auto mb-1" />
                   <p className="text-2xl font-bold text-warning-700">
                     {results.filter((r) => r.timedOut).length}
                   </p>
-                  <p className="text-xs text-warning-600 font-medium">Temps écoulé</p>
+                  <p className="text-xs text-warning-600 font-medium">انتهى الوقت</p>
                 </div>
               </div>
 
@@ -557,14 +553,14 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
                 >
                   <Home className="w-5 h-5" />
-                  Accueil
+                  الرئيسية
                 </button>
                 <button
                   onClick={() => window.location.reload()}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
                 >
                   <RotateCcw className="w-5 h-5" />
-                  Recommencer
+                  إعادة المحاولة
                 </button>
               </div>
             </div>
@@ -610,8 +606,8 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           onClick={() => navigate(homePath)}
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium hidden sm:inline">Quitter</span>
+          <ArrowRight className="w-5 h-5" />
+          <span className="text-sm font-medium hidden sm:inline">خروج</span>
         </button>
         <div className="flex items-center gap-2.5">
           <Car className="w-5 h-5 text-primary-400" />
@@ -621,7 +617,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           </span>
         </div>
         <div className="text-sm text-slate-400">
-          {answeredCount}/{totalQuestions} répondues
+          {answeredCount}/{totalQuestions} تمّت الإجابة
         </div>
       </div>
 
@@ -634,7 +630,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
             {currentQuestion?.image_url ? (
               <img
                 src={currentQuestion.image_url}
-                alt="Scenario"
+                alt="السيناريو"
                 className="w-full h-full object-contain"
               />
             ) : (
@@ -642,7 +638,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 <div className="w-20 h-20 bg-slate-700 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <AlertCircle className="w-10 h-10 text-slate-500" />
                 </div>
-                <p className="text-slate-400">Pas d'image pour cette question</p>
+                <p className="text-slate-400">لا توجد صورة لهذا السؤال</p>
               </div>
             )}
 
@@ -671,19 +667,19 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 {feedback === 'correct' && (
                   <div className="text-center">
                     <CheckCircle2 className="w-20 h-20 text-success-400 mx-auto mb-3" />
-                    <p className="text-success-400 text-2xl font-bold">Correct!</p>
+                    <p className="text-success-400 text-2xl font-bold">صحيح!</p>
                   </div>
                 )}
                 {feedback === 'wrong' && (
                   <div className="text-center">
                     <XCircle className="w-20 h-20 text-error-400 mx-auto mb-3" />
-                    <p className="text-error-400 text-2xl font-bold">Incorrect</p>
+                    <p className="text-error-400 text-2xl font-bold">خطأ</p>
                   </div>
                 )}
                 {feedback === 'timeout' && (
                   <div className="text-center">
                     <AlertCircle className="w-20 h-20 text-warning-400 mx-auto mb-3" />
-                    <p className="text-warning-400 text-2xl font-bold">Temps écoulé!</p>
+                    <p className="text-warning-400 text-2xl font-bold">انتهى الوقت!</p>
                   </div>
                 )}
               </div>
@@ -697,7 +693,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               disabled={currentIndex === 0 || feedback !== 'none'}
               className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" />
             </button>
             <div className="flex gap-1.5 flex-wrap justify-center max-w-md">
               {questions.map((_, idx) => {
@@ -726,7 +722,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               disabled={currentIndex === totalQuestions - 1 || feedback !== 'none'}
               className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -775,7 +771,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                   >
                     {opt.num}
                   </span>
-                  <span className="flex-1 text-left line-clamp-1" dir="auto">
+                  <span className="flex-1 text-start line-clamp-1" dir="auto">
                     {opt.text}
                   </span>
                   {isSelected && <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />}
@@ -812,7 +808,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                   >
                     {opt.num}
                   </span>
-                  <span className="flex-1 text-left line-clamp-1" dir="auto">
+                  <span className="flex-1 text-start line-clamp-1" dir="auto">
                     {opt.text}
                   </span>
                   {isSelected && <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />}
@@ -829,7 +825,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               className="flex-1 py-2.5 bg-error-500/90 hover:bg-error-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
             >
               <RotateCcw className="w-4 h-4" />
-              Corriger
+              مسح
             </button>
             <button
               onClick={handleValider}
@@ -837,7 +833,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               className="flex-1 py-2.5 bg-success-500 hover:bg-success-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
-              Valider
+              تأكيد
             </button>
           </div>
         </div>
@@ -849,8 +845,8 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           {/* Question number */}
           <div className="text-center order-1">
             <span className="text-slate-400 text-sm">
-              Question{' '}
-              <span className="text-white font-bold text-base">{currentIndex + 1}</span> sur{' '}
+              السؤال{' '}
+              <span className="text-white font-bold text-base">{currentIndex + 1}</span> من{' '}
               <span className="text-slate-300 font-semibold">{totalQuestions}</span>
             </span>
           </div>
@@ -858,7 +854,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           {/* Category */}
           <div className="order-2">
             <span className="text-xs px-2.5 py-1 bg-primary-900/50 text-primary-300 rounded-full font-medium border border-primary-800">
-              Catégorie: {currentQuestion?.category ?? series?.category}
+              الفئة: {currentQuestion?.category ?? series?.category}
             </span>
           </div>
 

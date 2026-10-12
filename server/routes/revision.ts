@@ -73,7 +73,7 @@ revisionRoutes.post('/complete', requireStudent, async (c) => {
   const user = c.get('user');
   const body = await c.req.json<{ results?: unknown }>().catch(() => ({} as { results?: unknown }));
   if (!Array.isArray(body.results)) {
-    return c.json({ error: 'results is required' }, 400);
+    return c.json({ error: 'حقل النتائج مطلوب' }, 400);
   }
   const results = body.results.filter(
     (r): r is RevisionResult =>

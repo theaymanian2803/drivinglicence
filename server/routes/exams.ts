@@ -54,7 +54,7 @@ examRoutes.get('/official', requireStudent, async (c) => {
   if (questions.length < config.question_count) {
     return c.json(
       {
-        error: `Il n'y a pas encore assez de questions actives pour l'examen officiel (${questions.length}/${config.question_count}).`,
+        error: `لا توجد بعد أسئلة مفعّلة كافية للامتحان الرسمي (${questions.length}/${config.question_count}).`,
       },
       409
     );
@@ -73,14 +73,14 @@ examRoutes.post('/official/complete', requireStudent, async (c) => {
   const body = await c.req.json<CompleteBody>().catch(() => ({} as CompleteBody));
   const { score, total_questions } = body;
   if (typeof score !== 'number' || typeof total_questions !== 'number') {
-    return c.json({ error: 'score and total_questions are required' }, 400);
+    return c.json({ error: 'النتيجة وعدد الأسئلة مطلوبان' }, 400);
   }
   const config = await readOfficialConfig();
   if (score < 0 || total_questions !== config.question_count || score > total_questions) {
-    return c.json({ error: 'Invalid score values' }, 400);
+    return c.json({ error: 'قيم النتيجة غير صالحة' }, 400);
   }
   const seriesId = await officialSeriesId();
-  if (!seriesId) return c.json({ error: 'Official exam is not configured.' }, 500);
+  if (!seriesId) return c.json({ error: 'الامتحان الرسمي غير مُهيّأ.' }, 500);
 
   const passed = score >= config.pass_score ? 1 : 0;
   const id = randomUUID();

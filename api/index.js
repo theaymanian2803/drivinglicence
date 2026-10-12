@@ -154,15 +154,15 @@ authRoutes.post("/login", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = body.email?.trim().toLowerCase();
   const password = body.password;
-  if (!email || !password) return c.json({ error: "Email and password are required" }, 400);
+  if (!email || !password) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0645\u0637\u0644\u0648\u0628\u0627\u0646" }, 400);
   const result = await db.execute({
     sql: "SELECT id, email, password_hash FROM users WHERE email = ? LIMIT 1",
     args: [email]
   });
-  if (result.rows.length === 0) return c.json({ error: "Invalid email or password" }, 401);
+  if (result.rows.length === 0) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0623\u0648 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" }, 401);
   const row = result.rows[0];
   const ok = await verifyPassword(password, row.password_hash);
-  if (!ok) return c.json({ error: "Invalid email or password" }, 401);
+  if (!ok) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0623\u0648 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" }, 401);
   const user = { id: row.id, email: row.email, role: "admin" };
   setAuthCookie(c, await signToken(user));
   return c.json({ data: { user } });
@@ -173,7 +173,7 @@ authRoutes.post("/logout", (c) => {
 });
 authRoutes.get("/me", async (c) => {
   const user = await getAuthUser(c);
-  if (!user) return c.json({ error: "Unauthorized" }, 401);
+  if (!user) return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   return c.json({ data: { user } });
 });
 
@@ -184,16 +184,16 @@ studentAuthRoutes.post("/login", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = body.email?.trim().toLowerCase();
   const code = body.accessCode?.trim().toUpperCase();
-  if (!email || !code) return c.json({ error: "Email and access code are required" }, 400);
+  if (!email || !code) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0648\u0631\u0645\u0632 \u0627\u0644\u062F\u062E\u0648\u0644 \u0645\u0637\u0644\u0648\u0628\u0627\u0646" }, 400);
   const result = await db.execute({
     sql: "SELECT id, name, email, access_code, is_active FROM students WHERE email = ? LIMIT 1",
     args: [email]
   });
-  if (result.rows.length === 0) return c.json({ error: "Invalid email or access code" }, 401);
+  if (result.rows.length === 0) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0623\u0648 \u0631\u0645\u0632 \u0627\u0644\u062F\u062E\u0648\u0644 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" }, 401);
   const row = result.rows[0];
-  if (!row.is_active) return c.json({ error: "Invalid email or access code" }, 401);
+  if (!row.is_active) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0623\u0648 \u0631\u0645\u0632 \u0627\u0644\u062F\u062E\u0648\u0644 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" }, 401);
   if (row.access_code.toUpperCase() !== code) {
-    return c.json({ error: "Invalid email or access code" }, 401);
+    return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0623\u0648 \u0631\u0645\u0632 \u0627\u0644\u062F\u062E\u0648\u0644 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D" }, 401);
   }
   const user = { id: row.id, email: row.email, role: "student" };
   setAuthCookie(c, await signToken(user));
@@ -201,12 +201,12 @@ studentAuthRoutes.post("/login", async (c) => {
 });
 studentAuthRoutes.get("/me", async (c) => {
   const user = await getAuthUser(c);
-  if (!user || user.role !== "student") return c.json({ error: "Unauthorized" }, 401);
+  if (!user || user.role !== "student") return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   const result = await db.execute({
     sql: "SELECT id, name, email, is_active FROM students WHERE id = ? LIMIT 1",
     args: [user.id]
   });
-  if (result.rows.length === 0) return c.json({ error: "Unauthorized" }, 401);
+  if (result.rows.length === 0) return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   const row = result.rows[0];
   return c.json({ data: { user, name: row.name } });
 });
@@ -219,7 +219,7 @@ import { randomUUID as randomUUID2 } from "node:crypto";
 async function requireUser(c, next) {
   const user = await getAuthUser(c);
   if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   }
   c.set("user", user);
   await next();
@@ -234,10 +234,10 @@ async function optionalUser(c, next) {
 async function requireAdmin(c, next) {
   const user = await getAuthUser(c);
   if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   }
   if (user.role !== "admin") {
-    return c.json({ error: "Forbidden" }, 403);
+    return c.json({ error: "\u0645\u0645\u0646\u0648\u0639" }, 403);
   }
   c.set("user", user);
   await next();
@@ -245,17 +245,17 @@ async function requireAdmin(c, next) {
 async function requireStudent(c, next) {
   const user = await getAuthUser(c);
   if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   }
   if (user.role !== "student") {
-    return c.json({ error: "Forbidden" }, 403);
+    return c.json({ error: "\u0645\u0645\u0646\u0648\u0639" }, 403);
   }
   const row = await db.execute({
     sql: "SELECT id FROM students WHERE id = ? AND is_active = 1 LIMIT 1",
     args: [user.id]
   });
   if (row.rows.length === 0) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
   }
   c.set("user", user);
   await next();
@@ -351,7 +351,7 @@ seriesRoutes.get("/", optionalUser, async (c) => {
       args: ["site_public"]
     });
     const isPublic = settings.rows[0] ? String(settings.rows[0].value) === "1" : false;
-    if (!isPublic) return c.json({ error: "Unauthorized" }, 401);
+    if (!isPublic) return c.json({ error: "\u063A\u064A\u0631 \u0645\u0635\u0631\u0651\u062D" }, 401);
     const active = await db.execute(
       `SELECT s.*, (SELECT COUNT(*) FROM questions q WHERE q.series_id = s.id) AS question_count
        FROM series s
@@ -371,14 +371,14 @@ seriesRoutes.get("/", optionalUser, async (c) => {
 });
 seriesRoutes.get("/:id", requireUser, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid series id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "SELECT * FROM series WHERE id = ?", args: [id] });
-  if (result.rows.length === 0) return c.json({ error: "Series not found" }, 404);
+  if (result.rows.length === 0) return c.json({ error: "\u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   return c.json({ data: toSeries(result.rows[0]) });
 });
 seriesRoutes.get("/:id/questions", requireUser, async (c) => {
   const seriesId = c.req.param("id");
-  if (!seriesId) return c.json({ error: "Invalid series id" }, 400);
+  if (!seriesId) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({
     sql: "SELECT * FROM questions WHERE series_id = ? ORDER BY position ASC, created_at ASC",
     args: [seriesId]
@@ -387,7 +387,7 @@ seriesRoutes.get("/:id/questions", requireUser, async (c) => {
 });
 seriesRoutes.post("/", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  if (!body.title?.trim()) return c.json({ error: "Title is required" }, 400);
+  if (!body.title?.trim()) return c.json({ error: "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628" }, 400);
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const id = randomUUID2();
   await db.execute({
@@ -409,9 +409,9 @@ seriesRoutes.post("/", requireAdmin, async (c) => {
 });
 seriesRoutes.put("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid series id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const body = await c.req.json().catch(() => ({}));
-  if (!body.title?.trim()) return c.json({ error: "Title is required" }, 400);
+  if (!body.title?.trim()) return c.json({ error: "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628" }, 400);
   const now = (/* @__PURE__ */ new Date()).toISOString();
   await db.execute({
     sql: "UPDATE series SET title = ?, description = ?, is_active = ?, category = ?, pass_score = ?, required_questions = ?, updated_at = ? WHERE id = ?",
@@ -427,14 +427,14 @@ seriesRoutes.put("/:id", requireAdmin, async (c) => {
     ]
   });
   const updated = await db.execute({ sql: "SELECT * FROM series WHERE id = ?", args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: "Series not found" }, 404);
+  if (updated.rows.length === 0) return c.json({ error: "\u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   return c.json({ data: toSeries(updated.rows[0]) });
 });
 seriesRoutes.delete("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid series id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "DELETE FROM series WHERE id = ?", args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: "Series not found" }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: "\u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   return c.json({ data: { ok: true } });
 });
 
@@ -446,7 +446,7 @@ var INSERT_COLUMNS = "id, series_id, image_url, audio_url, question_text, questi
 questionRoutes.patch("/reorder", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== "string")) {
-    return c.json({ error: "Invalid ids payload" }, 400);
+    return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0645\u064F\u0631\u0633\u0644 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   }
   const statements = body.ids.map((id, index) => ({
     sql: "UPDATE questions SET position = ? WHERE id = ?",
@@ -458,7 +458,7 @@ questionRoutes.patch("/reorder", requireAdmin, async (c) => {
 questionRoutes.post("/", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   if (!body.series_id || !body.question_text?.trim()) {
-    return c.json({ error: "series_id and question_text are required" }, 400);
+    return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u0648\u0646\u0635 \u0627\u0644\u0633\u0624\u0627\u0644 \u0645\u0637\u0644\u0648\u0628\u0627\u0646" }, 400);
   }
   const pos = await db.execute({
     sql: "SELECT COALESCE(MAX(position), -1) + 1 AS next_position FROM questions WHERE series_id = ?",
@@ -494,10 +494,10 @@ questionRoutes.post("/", requireAdmin, async (c) => {
 });
 questionRoutes.put("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid question id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0624\u0627\u0644 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const body = await c.req.json().catch(() => ({}));
   if (!body.question_text?.trim() || !body.series_id) {
-    return c.json({ error: "question_text and series_id are required" }, 400);
+    return c.json({ error: "\u0646\u0635 \u0627\u0644\u0633\u0624\u0627\u0644 \u0648\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0627\u0646" }, 400);
   }
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const args = [
@@ -521,14 +521,14 @@ questionRoutes.put("/:id", requireAdmin, async (c) => {
     args
   });
   const updated = await db.execute({ sql: "SELECT * FROM questions WHERE id = ?", args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: "Question not found" }, 404);
+  if (updated.rows.length === 0) return c.json({ error: "\u0627\u0644\u0633\u0624\u0627\u0644 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
   return c.json({ data: toQuestion(updated.rows[0]) });
 });
 questionRoutes.delete("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid question id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0624\u0627\u0644 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "DELETE FROM questions WHERE id = ?", args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: "Question not found" }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: "\u0627\u0644\u0633\u0624\u0627\u0644 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
   return c.json({ data: { ok: true } });
 });
 
@@ -550,7 +550,7 @@ async function generateAccessCode() {
     });
     if (existing.rows.length === 0) return code;
   }
-  throw new Error("Could not generate a unique access code");
+  throw new Error("\u062A\u0639\u0630\u0651\u0631 \u0625\u0646\u0634\u0627\u0621 \u0631\u0645\u0632 \u062F\u062E\u0648\u0644 \u0641\u0631\u064A\u062F");
 }
 studentsRoutes.get("/", requireAdmin, async (c) => {
   const result = await db.execute(
@@ -563,7 +563,7 @@ studentsRoutes.get("/", requireAdmin, async (c) => {
 studentsRoutes.post("/", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = body.email?.trim().toLowerCase();
-  if (!email) return c.json({ error: "Email is required" }, 400);
+  if (!email) return c.json({ error: "\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0645\u0637\u0644\u0648\u0628" }, 400);
   const name = body.name?.trim() || null;
   const accessCode = await generateAccessCode();
   const id = randomUUID4();
@@ -574,33 +574,33 @@ studentsRoutes.post("/", requireAdmin, async (c) => {
       args: [id, name, email, accessCode, now]
     });
   } catch {
-    return c.json({ error: "A student with this email already exists" }, 409);
+    return c.json({ error: "\u064A\u0648\u062C\u062F \u0645\u062A\u0631\u0634\u062D \u0628\u0647\u0630\u0627 \u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0628\u0627\u0644\u0641\u0639\u0644" }, 409);
   }
   const created = await db.execute({ sql: "SELECT * FROM students WHERE id = ?", args: [id] });
   return c.json({ data: toStudent(created.rows[0]) }, 201);
 });
 studentsRoutes.post("/:id/reset-code", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid student id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0645\u062A\u0631\u0634\u062D \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const accessCode = await generateAccessCode();
   const result = await db.execute({
     sql: "UPDATE students SET access_code = ? WHERE id = ?",
     args: [accessCode, id]
   });
-  if (result.rowsAffected === 0) return c.json({ error: "Student not found" }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: "\u0627\u0644\u0645\u062A\u0631\u0634\u062D \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
   const updated = await db.execute({ sql: "SELECT * FROM students WHERE id = ?", args: [id] });
   return c.json({ data: toStudent(updated.rows[0]) });
 });
 studentsRoutes.delete("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid student id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0645\u062A\u0631\u0634\u062D \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "DELETE FROM students WHERE id = ?", args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: "Student not found" }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: "\u0627\u0644\u0645\u062A\u0631\u0634\u062D \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F" }, 404);
   return c.json({ data: { ok: true } });
 });
 studentsRoutes.get("/:id/attempts", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid student id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0645\u062A\u0631\u0634\u062D \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({
     sql: `SELECT a.*, s.title AS series_title
      FROM exam_attempts a
@@ -633,10 +633,10 @@ attemptsRoutes.post("/", requireStudent, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const { series_id, score, total_questions } = body;
   if (!series_id || typeof score !== "number" || typeof total_questions !== "number") {
-    return c.json({ error: "series_id, score and total_questions are required" }, 400);
+    return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u0648\u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u0648\u0639\u062F\u062F \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0629" }, 400);
   }
   if (score < 0 || total_questions <= 0 || score > total_questions) {
-    return c.json({ error: "Invalid score values" }, 400);
+    return c.json({ error: "\u0642\u064A\u0645 \u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D\u0629" }, 400);
   }
   const seriesRes = await db.execute({
     sql: `SELECT s.pass_score, s.required_questions,
@@ -644,14 +644,14 @@ attemptsRoutes.post("/", requireStudent, async (c) => {
      FROM series s WHERE s.id = ? LIMIT 1`,
     args: [series_id]
   });
-  if (seriesRes.rows.length === 0) return c.json({ error: "Series not found" }, 404);
+  if (seriesRes.rows.length === 0) return c.json({ error: "\u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   const srow = seriesRes.rows[0];
   const passScore = Number(srow.pass_score);
   const requiredQuestions = Number(srow.required_questions);
   const questionCount = Number(srow.question_count);
   if (requiredQuestions > 0 && questionCount !== requiredQuestions) {
     return c.json(
-      { error: `Series is incomplete (${questionCount}/${requiredQuestions} questions)` },
+      { error: `\u0627\u0644\u0633\u0644\u0633\u0644\u0629 \u063A\u064A\u0631 \u0645\u0643\u062A\u0645\u0644\u0629 (${questionCount}/${requiredQuestions} \u0633\u0624\u0627\u0644)` },
       400
     );
   }
@@ -759,7 +759,7 @@ revisionRoutes.post("/complete", requireStudent, async (c) => {
   const user = c.get("user");
   const body = await c.req.json().catch(() => ({}));
   if (!Array.isArray(body.results)) {
-    return c.json({ error: "results is required" }, 400);
+    return c.json({ error: "\u062D\u0642\u0644 \u0627\u0644\u0646\u062A\u0627\u0626\u062C \u0645\u0637\u0644\u0648\u0628" }, 400);
   }
   const results = body.results.filter(
     (r) => !!r && typeof r === "object" && typeof r.question_id === "string" && typeof r.correct === "boolean"
@@ -822,7 +822,7 @@ function requireConfig() {
     !publicDomain && "R2_PUBLIC_DOMAIN"
   ].filter(Boolean);
   if (missing.length > 0) {
-    throw new Error(`R2 upload is not configured. Missing: ${missing.join(", ")}`);
+    throw new Error(`\u0631\u0641\u0639 R2 \u063A\u064A\u0631 \u0645\u064F\u0647\u064A\u0651\u0623. Missing: ${missing.join(", ")}`);
   }
   return {
     accountId,
@@ -852,15 +852,15 @@ async function createPresignedImageUpload(input) {
   const extension = ALLOWED_TYPES[input.contentType];
   if (!extension) {
     throw new UploadValidationError(
-      `Unsupported image type "${input.contentType}". Allowed: ${Object.keys(ALLOWED_TYPES).join(", ")}`
+      `\u0646\u0648\u0639 \u0627\u0644\u0635\u0648\u0631\u0629 \u063A\u064A\u0631 \u0645\u062F\u0639\u0648\u0645 "${input.contentType}". \u0627\u0644\u0645\u0633\u0645\u0648\u062D: ${Object.keys(ALLOWED_TYPES).join(", ")}`
     );
   }
   if (!Number.isFinite(input.size) || input.size <= 0) {
-    throw new UploadValidationError("File is empty.");
+    throw new UploadValidationError("\u0627\u0644\u0645\u0644\u0641 \u0641\u0627\u0631\u063A.");
   }
   if (input.size > MAX_IMAGE_BYTES) {
     throw new UploadValidationError(
-      `File is ${(input.size / 1024 / 1024).toFixed(1)} MB. Maximum is ${MAX_IMAGE_BYTES / 1024 / 1024} MB.`
+      `\u062D\u062C\u0645 \u0627\u0644\u0645\u0644\u0641 ${(input.size / 1024 / 1024).toFixed(1)} \u0645\u064A\u063A\u0627\u0628\u0627\u064A\u062A. \u0627\u0644\u062D\u062F \u0627\u0644\u0623\u0642\u0635\u0649 ${MAX_IMAGE_BYTES / 1024 / 1024} \u0645\u064A\u063A\u0627\u0628\u0627\u064A\u062A.`
     );
   }
   const cfg = requireConfig();
@@ -889,10 +889,10 @@ uploadRoutes.post("/", async (c) => {
   const contentType = body.contentType?.trim() ?? "";
   const size = Number(body.size);
   if (!contentType) {
-    return c.json({ error: "contentType is required" }, 400);
+    return c.json({ error: "\u0646\u0648\u0639 \u0627\u0644\u0645\u062D\u062A\u0648\u0649 \u0645\u0637\u0644\u0648\u0628" }, 400);
   }
   if (!Number.isFinite(size)) {
-    return c.json({ error: "size must be a number of bytes" }, 400);
+    return c.json({ error: "\u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0627\u0644\u062D\u062C\u0645 \u0639\u062F\u062F\u0627\u064B \u0628\u0627\u0644\u0628\u0627\u064A\u062A" }, 400);
   }
   try {
     const result = await createPresignedImageUpload({ contentType, size });
@@ -902,10 +902,10 @@ uploadRoutes.post("/", async (c) => {
       return c.json({ error: err.message }, 400);
     }
     if (err instanceof Error && /Missing:/.test(err.message)) {
-      return c.json({ error: "Image uploads are not configured on the server." }, 503);
+      return c.json({ error: "\u0631\u0641\u0639 \u0627\u0644\u0635\u0648\u0631 \u063A\u064A\u0631 \u0645\u064F\u0647\u064A\u0651\u0623 \u0639\u0644\u0649 \u0627\u0644\u062E\u0627\u062F\u0645." }, 503);
     }
     console.error("Failed to presign R2 upload:", err);
-    return c.json({ error: "Could not prepare the upload. Try again." }, 500);
+    return c.json({ error: "\u062A\u0639\u0630\u0651\u0631 \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0631\u0641\u0639. \u062D\u0627\u0648\u0644 \u0645\u062C\u062F\u062F\u0627\u064B." }, 500);
   }
 });
 
@@ -937,20 +937,20 @@ signRoutes.get("/", optionalUser, async (c) => {
 });
 signRoutes.get("/:id", optionalUser, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid sign id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "SELECT * FROM signs WHERE id = ?", args: [id] });
-  if (result.rows.length === 0) return c.json({ error: "Sign not found" }, 404);
+  if (result.rows.length === 0) return c.json({ error: "\u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   const row = result.rows[0];
   const user = c.get("user");
   if (user?.role !== "admin" && Number(row.is_active) !== 1) {
-    return c.json({ error: "Sign not found" }, 404);
+    return c.json({ error: "\u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   }
   return c.json({ data: toSign(row) });
 });
 signRoutes.patch("/reorder", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== "string")) {
-    return c.json({ error: "Invalid ids payload" }, 400);
+    return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0644\u0648\u062D\u0627\u062A \u0627\u0644\u0645\u064F\u0631\u0633\u0644 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   }
   const statements = body.ids.map((id, index) => ({
     sql: "UPDATE signs SET position = ? WHERE id = ?",
@@ -961,9 +961,9 @@ signRoutes.patch("/reorder", requireAdmin, async (c) => {
 });
 signRoutes.post("/", requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  if (!body.title?.trim()) return c.json({ error: "Title is required" }, 400);
-  if (!body.image_url?.trim()) return c.json({ error: "Sign image is required" }, 400);
-  if (!body.description?.trim()) return c.json({ error: "Description is required" }, 400);
+  if (!body.title?.trim()) return c.json({ error: "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628" }, 400);
+  if (!body.image_url?.trim()) return c.json({ error: "\u0635\u0648\u0631\u0629 \u0627\u0644\u0644\u0648\u062D\u0629 \u0645\u0637\u0644\u0648\u0628\u0629" }, 400);
+  if (!body.description?.trim()) return c.json({ error: "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628" }, 400);
   const pos = await db.execute({
     sql: "SELECT COALESCE(MAX(position), -1) + 1 AS next_position FROM signs"
   });
@@ -991,11 +991,11 @@ signRoutes.post("/", requireAdmin, async (c) => {
 });
 signRoutes.put("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid sign id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const body = await c.req.json().catch(() => ({}));
-  if (!body.title?.trim()) return c.json({ error: "Title is required" }, 400);
-  if (!body.image_url?.trim()) return c.json({ error: "Sign image is required" }, 400);
-  if (!body.description?.trim()) return c.json({ error: "Description is required" }, 400);
+  if (!body.title?.trim()) return c.json({ error: "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628" }, 400);
+  if (!body.image_url?.trim()) return c.json({ error: "\u0635\u0648\u0631\u0629 \u0627\u0644\u0644\u0648\u062D\u0629 \u0645\u0637\u0644\u0648\u0628\u0629" }, 400);
+  if (!body.description?.trim()) return c.json({ error: "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628" }, 400);
   const category = SIGN_CATEGORIES.includes(body.category) ? body.category : SIGN_CATEGORIES[0];
   const now = (/* @__PURE__ */ new Date()).toISOString();
   await db.execute({
@@ -1012,14 +1012,14 @@ signRoutes.put("/:id", requireAdmin, async (c) => {
     ]
   });
   const updated = await db.execute({ sql: "SELECT * FROM signs WHERE id = ?", args: [id] });
-  if (updated.rows.length === 0) return c.json({ error: "Sign not found" }, 404);
+  if (updated.rows.length === 0) return c.json({ error: "\u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   return c.json({ data: toSign(updated.rows[0]) });
 });
 signRoutes.delete("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
-  if (!id) return c.json({ error: "Invalid sign id" }, 400);
+  if (!id) return c.json({ error: "\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D" }, 400);
   const result = await db.execute({ sql: "DELETE FROM signs WHERE id = ?", args: [id] });
-  if (result.rowsAffected === 0) return c.json({ error: "Sign not found" }, 404);
+  if (result.rowsAffected === 0) return c.json({ error: "\u0627\u0644\u0644\u0648\u062D\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629" }, 404);
   return c.json({ data: { ok: true } });
 });
 
@@ -1090,7 +1090,7 @@ examRoutes.get("/official", requireStudent, async (c) => {
   if (questions.length < config.question_count) {
     return c.json(
       {
-        error: `Il n'y a pas encore assez de questions actives pour l'examen officiel (${questions.length}/${config.question_count}).`
+        error: `\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u0639\u062F \u0623\u0633\u0626\u0644\u0629 \u0645\u0641\u0639\u0651\u0644\u0629 \u0643\u0627\u0641\u064A\u0629 \u0644\u0644\u0627\u0645\u062A\u062D\u0627\u0646 \u0627\u0644\u0631\u0633\u0645\u064A (${questions.length}/${config.question_count}).`
       },
       409
     );
@@ -1102,14 +1102,14 @@ examRoutes.post("/official/complete", requireStudent, async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const { score, total_questions } = body;
   if (typeof score !== "number" || typeof total_questions !== "number") {
-    return c.json({ error: "score and total_questions are required" }, 400);
+    return c.json({ error: "\u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u0648\u0639\u062F\u062F \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0627\u0646" }, 400);
   }
   const config = await readOfficialConfig();
   if (score < 0 || total_questions !== config.question_count || score > total_questions) {
-    return c.json({ error: "Invalid score values" }, 400);
+    return c.json({ error: "\u0642\u064A\u0645 \u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D\u0629" }, 400);
   }
   const seriesId = await officialSeriesId();
-  if (!seriesId) return c.json({ error: "Official exam is not configured." }, 500);
+  if (!seriesId) return c.json({ error: "\u0627\u0644\u0627\u0645\u062A\u062D\u0627\u0646 \u0627\u0644\u0631\u0633\u0645\u064A \u063A\u064A\u0631 \u0645\u064F\u0647\u064A\u0651\u0623." }, 500);
   const passed = score >= config.pass_score ? 1 : 0;
   const id = randomUUID8();
   const now = (/* @__PURE__ */ new Date()).toISOString();

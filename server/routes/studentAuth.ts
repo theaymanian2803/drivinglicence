@@ -10,13 +10,13 @@ studentAuthRoutes.post('/login', async (c) => {
   const body = await c.req.json<LoginBody>().catch(() => ({} as LoginBody));
   const email = body.email?.trim().toLowerCase();
   const code = body.accessCode?.trim().toUpperCase();
-  if (!email || !code) return c.json({ error: 'Email and access code are required' }, 400);
+  if (!email || !code) return c.json({ error: 'البريد الإلكتروني ورمز الدخول مطلوبان' }, 400);
 
   const result = await db.execute({
     sql: 'SELECT id, name, email, access_code, is_active FROM students WHERE email = ? LIMIT 1',
     args: [email],
   });
-  if (result.rows.length === 0) return c.json({ error: 'Invalid email or access code' }, 401);
+  if (result.rows.length === 0) return c.json({ error: 'البريد الإلكتروني أو رمز الدخول غير صحيح' }, 401);
 
   const row = result.rows[0] as unknown as {
     id: string;
@@ -25,9 +25,9 @@ studentAuthRoutes.post('/login', async (c) => {
     access_code: string;
     is_active: number;
   };
-  if (!row.is_active) return c.json({ error: 'Invalid email or access code' }, 401);
+  if (!row.is_active) return c.json({ error: 'البريد الإلكتروني أو رمز الدخول غير صحيح' }, 401);
   if (row.access_code.toUpperCase() !== code) {
-    return c.json({ error: 'Invalid email or access code' }, 401);
+    return c.json({ error: 'البريد الإلكتروني أو رمز الدخول غير صحيح' }, 401);
   }
 
   const user = { id: row.id, email: row.email, role: 'student' as const };
@@ -37,12 +37,12 @@ studentAuthRoutes.post('/login', async (c) => {
 
 studentAuthRoutes.get('/me', async (c) => {
   const user = await getAuthUser(c);
-  if (!user || user.role !== 'student') return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || user.role !== 'student') return c.json({ error: 'غير مصرّح' }, 401);
   const result = await db.execute({
     sql: 'SELECT id, name, email, is_active FROM students WHERE id = ? LIMIT 1',
     args: [user.id],
   });
-  if (result.rows.length === 0) return c.json({ error: 'Unauthorized' }, 401);
+  if (result.rows.length === 0) return c.json({ error: 'غير مصرّح' }, 401);
   const row = result.rows[0] as unknown as {
     id: string;
     name: string | null;
