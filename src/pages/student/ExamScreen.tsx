@@ -11,8 +11,6 @@ import {
   Trophy,
   Home,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
   Car,
   BookOpen,
 } from 'lucide-react';
@@ -20,13 +18,124 @@ import { api } from '@/lib/db';
 import type { CompleteRevisionResult, OfficialExamStart, Question, RevisionSummary, Series } from '@/types';
 
 type ExamPhase = 'loading' | 'exam' | 'results';
-type Feedback = 'none' | 'correct' | 'wrong' | 'timeout';
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 interface ExamResult {
   question: Question;
   selected: number[];
   correct: boolean;
   timedOut: boolean;
+}
+
+function AnswerReview({ result, index }: { result: ExamResult; index: number }) {
+  const options = ([1, 2, 3, 4] as const)
+    .map((num) => ({
+      num,
+      text: result.question[`option_${num}` as keyof Question] as string | null,
+    }))
+    .filter((o) => o.text);
+
+  return (
+    <li
+      className={`rounded-xl p-3 border ${
+        result.correct ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200'
+      }`}
+    >
+      <div className="flex gap-3">
+        <div className="flex-shrink-0 mt-0.5">
+          {result.correct ? (
+            <CheckCircle2 className="w-5 h-5 text-success-600" />
+          ) : (
+            <XCircle className="w-5 h-5 text-error-600" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-slate-900" dir="auto">
+            {index + 1}. {result.question.question_text}
+          </p>
+          <div className="mt-2 space-y-1">
+            {options.map((o) => {
+              const isCorrect = result.question.correct_answers.includes(o.num);
+              const isSelected = result.selected.includes(o.num);
+              return (
+                <div
+                  key={o.num}
+                  className={`flex items-start gap-2 text-sm rounded-lg px-2 py-1 ${
+                    isCorrect
+                      ? 'bg-success-100/70 text-success-800'
+                      : isSelected
+                      ? 'bg-error-100/70 text-error-800'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  <span className="font-bold flex-shrink-0">{o.num}.</span>
+                  <span className="flex-1" dir="auto">
+                    {o.text}
+                  </span>
+                  <span className="flex items-center gap-1 flex-shrink-0 text-xs font-semibold">
+                    {isCorrect && (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" /> صحيحة
+                      </>
+                    )}
+                    {!isCorrect && isSelected && (
+                      <>
+                        <XCircle className="w-3.5 h-3.5" /> اختيارك
+                      </>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {result.timedOut && (
+            <p className="mt-1.5 text-xs font-semibold text-warning-600">انتهى الوقت</p>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function SaveStatus({
+  state,
+  error,
+  onRetry,
+}: {
+  state: SaveState;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  if (state === 'idle' || state === 'saving') {
+    return (
+      <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-6">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        جارٍ حفظ النتيجة...
+      </div>
+    );
+  }
+  if (state === 'saved') {
+    return (
+      <div className="flex items-center justify-center gap-2 text-sm font-medium text-success-600 mb-6">
+        <CheckCircle2 className="w-4 h-4" />
+        تم حفظ النتيجة في نتائجك.
+      </div>
+    );
+  }
+  return (
+    <div className="bg-error-50 border border-error-200 rounded-xl p-3 mb-6 text-center">
+      <p className="text-sm text-error-700 font-medium mb-2" dir="auto">
+        تعذّر حفظ النتيجة{error ? `: ${error}` : '.'}
+      </p>
+      <button
+        onClick={onRetry}
+        className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-error-600 hover:bg-error-700 text-white rounded-lg text-sm font-medium transition-colors"
+      >
+        <RotateCcw className="w-4 h-4" />
+        إعادة المحاولة
+      </button>
+    </div>
+  );
 }
 
 interface ExamScreenProps {
@@ -51,60 +160,80 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
   const [results, setResults] = useState<ExamResult[]>([]);
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioVolume, setAudioVolume] = useState(0.7);
-  const [feedback, setFeedback] = useState<Feedback>('none');
   const [revisionSummary, setRevisionSummary] = useState<RevisionSummary | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const advancingRef = useRef(false);
   const submittedRef = useRef(false);
 
   const currentQuestion = questions[currentIndex];
 
-  // ===== Submit attempt / revision result when the session finishes =====
-  useEffect(() => {
-    if (phase !== 'results' || submittedRef.current) return;
+  // ===== Persist the session result (awaited, with visible failure state) =====
+  const submitResults = useCallback(async () => {
     if (results.length === 0) return;
-    submittedRef.current = true;
     const score = results.filter((r) => r.correct).length;
+    setSaveState('saving');
+    setSaveError(null);
 
     if (revisionMode) {
-      api
-        .post<CompleteRevisionResult>('/revision/complete', {
-          results: results.map((r) => ({
-            question_id: r.question.id,
-            correct: r.correct,
-          })),
-        })
-        .then((res) => {
-          if (!res.error) setRevisionSummary(res.data.summary);
-        });
+      const res = await api.post<CompleteRevisionResult>('/revision/complete', {
+        results: results.map((r) => ({
+          question_id: r.question.id,
+          correct: r.correct,
+        })),
+      });
+      if (res.error) {
+        setSaveError(res.error.message);
+        setSaveState('error');
+        return;
+      }
+      setRevisionSummary(res.data.summary);
+      setSaveState('saved');
       return;
     }
 
     if (officialMode) {
-      api.post('/exams/official/complete', {
+      const res = await api.post('/exams/official/complete', {
         score,
         total_questions: questions.length,
-        wrong_question_ids: results
-          .filter((r) => !r.correct)
-          .map((r) => r.question.id),
+        wrong_question_ids: results.filter((r) => !r.correct).map((r) => r.question.id),
       });
+      if (res.error) {
+        setSaveError(res.error.message);
+        setSaveState('error');
+        return;
+      }
+      setSaveState('saved');
       return;
     }
 
-    if (!series?.id) return;
-    api.post('/attempts', {
+    if (!series?.id) {
+      setSaveState('saved');
+      return;
+    }
+    const res = await api.post('/attempts', {
       series_id: series.id,
       score,
       total_questions: questions.length,
-      wrong_question_ids: results
-        .filter((r) => !r.correct)
-        .map((r) => r.question.id),
+      wrong_question_ids: results.filter((r) => !r.correct).map((r) => r.question.id),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, revisionMode, officialMode, series?.id, results.length, questions.length]);
+    if (res.error) {
+      setSaveError(res.error.message);
+      setSaveState('error');
+      return;
+    }
+    setSaveState('saved');
+  }, [results, revisionMode, officialMode, series?.id, questions.length]);
+
+  useEffect(() => {
+    if (phase !== 'results' || submittedRef.current) return;
+    if (results.length === 0) return;
+    submittedRef.current = true;
+    void submitResults();
+  }, [phase, results.length, submitResults]);
 
   // ===== Load data (normal mode fetches the series; revision uses passed questions) =====
   useEffect(() => {
@@ -202,7 +331,6 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
 
   // ===== Advance to next question or results =====
   const goToNext = useCallback(() => {
-    setFeedback('none');
     setSelectedAnswers([]);
 
     setCurrentIndex((prevIdx) => {
@@ -214,10 +342,9 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
       setTimeLeft(questions[nextIdx].timer_duration);
       return nextIdx;
     });
-    advancingRef.current = false;
-  }, [questions.length]);
+  }, [questions]);
 
-  // ===== Record result and show feedback, then advance =====
+  // ===== Record result and move on (no per-question correction) =====
   const recordAndAdvance = useCallback(
     (isCorrect: boolean, selected: number[], timedOut: boolean) => {
       if (advancingRef.current) return;
@@ -226,21 +353,23 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
       if (timerRef.current) clearInterval(timerRef.current);
       stopAudio();
 
-      setFeedback(timedOut ? 'timeout' : isCorrect ? 'correct' : 'wrong');
       setResults((prev) => [
         ...prev,
         { question: currentQuestion, selected, correct: isCorrect, timedOut },
       ]);
-
-      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-      feedbackTimerRef.current = setTimeout(() => goToNext(), 1500);
+      goToNext();
     },
     [currentQuestion, goToNext, stopAudio]
   );
 
+  // ===== Unlock interaction once the next question is shown =====
+  useEffect(() => {
+    advancingRef.current = false;
+  }, [currentIndex]);
+
   // ===== Timer — clean interval, no side effects inside setter =====
   useEffect(() => {
-    if (phase !== 'exam' || feedback !== 'none') return;
+    if (phase !== 'exam') return;
     if (timerRef.current) clearInterval(timerRef.current);
 
     timerRef.current = setInterval(() => {
@@ -250,16 +379,16 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentIndex, phase, feedback]);
+  }, [currentIndex, phase]);
 
   // ===== Handle time reaching zero =====
   useEffect(() => {
-    if (phase !== 'exam' || feedback !== 'none') return;
+    if (phase !== 'exam') return;
     if (timeLeft > 0) return;
     if (advancingRef.current) return;
 
     recordAndAdvance(false, [], true);
-  }, [timeLeft, phase, feedback, recordAndAdvance]);
+  }, [timeLeft, phase, recordAndAdvance]);
 
   // ===== Audio playback =====
   useEffect(() => {
@@ -283,14 +412,13 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
       stopAudio();
     };
   }, [stopAudio]);
 
   // ===== Answer toggling =====
   const toggleAnswer = (num: number) => {
-    if (feedback !== 'none') return;
+    if (advancingRef.current) return;
     setSelectedAnswers((prev) =>
       prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num].sort()
     );
@@ -298,13 +426,13 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
 
   // ===== Corriger (clear selections) =====
   const handleCorriger = () => {
-    if (feedback !== 'none') return;
+    if (advancingRef.current) return;
     setSelectedAnswers([]);
   };
 
   // ===== Valider (submit answer) =====
   const handleValider = () => {
-    if (feedback !== 'none' || !currentQuestion || selectedAnswers.length === 0) return;
+    if (advancingRef.current || !currentQuestion || selectedAnswers.length === 0) return;
 
     const sortedSelected = [...selectedAnswers].sort();
     const sortedCorrect = [...currentQuestion.correct_answers].sort();
@@ -315,28 +443,11 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
     recordAndAdvance(isCorrect, sortedSelected, false);
   };
 
-  // ===== Navigate to a specific question (only to unanswered ones) =====
-  const goToQuestion = (idx: number) => {
-    if (idx < 0 || idx >= questions.length) return;
-    if (feedback !== 'none') return;
-    if (idx === currentIndex) return;
-
-    // Stop current timer
-    if (timerRef.current) clearInterval(timerRef.current);
-    stopAudio();
-
-    setCurrentIndex(idx);
-    setSelectedAnswers([]);
-    setFeedback('none');
-    setTimeLeft(questions[idx].timer_duration);
-    advancingRef.current = false;
-  };
-
   // ===== Keyboard support =====
   useEffect(() => {
     if (phase !== 'exam') return;
     const handler = (e: KeyboardEvent) => {
-      if (feedback !== 'none') return;
+      if (advancingRef.current) return;
       if (['1', '2', '3', '4'].includes(e.key)) {
         const num = parseInt(e.key);
         const optKey = `option_${num}` as keyof Question;
@@ -347,17 +458,11 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
       if (e.key === 'Enter') {
         handleValider();
       }
-      if (e.key === 'ArrowLeft') {
-        goToQuestion(currentIndex - 1);
-      }
-      if (e.key === 'ArrowRight') {
-        goToQuestion(currentIndex + 1);
-      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, feedback, selectedAnswers, currentQuestion, currentIndex]);
+  }, [phase, selectedAnswers, currentQuestion, currentIndex]);
 
   const score = results.filter((r) => r.correct).length;
   const totalQuestions = questions.length;
@@ -413,42 +518,11 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               </div>
 
               <div className="px-8 py-6">
+                <SaveStatus state={saveState} error={saveError} onRetry={() => void submitResults()} />
+
                 <ul className="space-y-3 mb-6">
                   {results.map((r, idx) => (
-                    <li
-                      key={r.question.id}
-                      className={`flex gap-3 rounded-xl p-3 border ${
-                        r.correct
-                          ? 'bg-success-50 border-success-200'
-                          : 'bg-error-50 border-error-200'
-                      }`}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {r.correct ? (
-                          <CheckCircle2 className="w-5 h-5 text-success-600" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-error-600" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900">
-                          {idx + 1}. {r.question.question_text}
-                        </p>
-                        <div className="mt-1.5 space-y-1">
-                          {r.question.correct_answers.map((num) => {
-                            const key = `option_${num}` as keyof Question;
-                            const text = r.question[key] as string | null;
-                            if (!text) return null;
-                            return (
-                              <p key={num} className="text-sm text-success-700 flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                                {text}
-                              </p>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </li>
+                    <AnswerReview key={r.question.id} result={r} index={idx} />
                   ))}
                 </ul>
 
@@ -546,6 +620,15 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                   <p className="text-xs text-warning-600 font-medium">انتهى الوقت</p>
                 </div>
               </div>
+
+              <SaveStatus state={saveState} error={saveError} onRetry={() => void submitResults()} />
+
+              <h3 className="text-start text-sm font-bold text-slate-700 mb-3">مراجعة الإجابات</h3>
+              <ul className="space-y-3 mb-6 text-start">
+                {results.map((r, idx) => (
+                  <AnswerReview key={r.question.id} result={r} index={idx} />
+                ))}
+              </ul>
 
               <div className="flex gap-3">
                 <button
@@ -661,69 +744,30 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
               </div>
             )}
 
-            {/* Feedback overlay */}
-            {feedback !== 'none' && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-                {feedback === 'correct' && (
-                  <div className="text-center">
-                    <CheckCircle2 className="w-20 h-20 text-success-400 mx-auto mb-3" />
-                    <p className="text-success-400 text-2xl font-bold">صحيح!</p>
-                  </div>
-                )}
-                {feedback === 'wrong' && (
-                  <div className="text-center">
-                    <XCircle className="w-20 h-20 text-error-400 mx-auto mb-3" />
-                    <p className="text-error-400 text-2xl font-bold">خطأ</p>
-                  </div>
-                )}
-                {feedback === 'timeout' && (
-                  <div className="text-center">
-                    <AlertCircle className="w-20 h-20 text-warning-400 mx-auto mb-3" />
-                    <p className="text-warning-400 text-2xl font-bold">انتهى الوقت!</p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
-          {/* Question navigation pills */}
+          {/* Progress pills (exam is sequential — no per-question correction) */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
-            <button
-              onClick={() => goToQuestion(currentIndex - 1)}
-              disabled={currentIndex === 0 || feedback !== 'none'}
-              className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
             <div className="flex gap-1.5 flex-wrap justify-center max-w-md">
               {questions.map((_, idx) => {
                 const isAnswered = idx < answeredCount;
                 const isCurrent = idx === currentIndex;
                 return (
-                  <button
+                  <span
                     key={idx}
-                    onClick={() => goToQuestion(idx)}
-                    disabled={feedback !== 'none'}
-                    className={`w-7 h-7 rounded-full text-xs font-bold transition-all ${
+                    className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center ${
                       isCurrent
                         ? 'bg-primary-600 text-white scale-110 shadow-md'
                         : isAnswered
-                        ? 'bg-success-600/80 text-white hover:bg-success-600'
-                        : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                    } ${feedback !== 'none' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        ? 'bg-success-600/80 text-white'
+                        : 'bg-slate-700 text-slate-400'
+                    }`}
                   >
                     {idx + 1}
-                  </button>
+                  </span>
                 );
               })}
             </div>
-            <button
-              onClick={() => goToQuestion(currentIndex + 1)}
-              disabled={currentIndex === totalQuestions - 1 || feedback !== 'none'}
-              className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -757,12 +801,11 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 <button
                   key={opt.num}
                   onClick={() => toggleAnswer(opt.num)}
-                  disabled={feedback !== 'none'}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium text-sm transition-all border-2 ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium text-sm transition-all border-2 cursor-pointer ${
                     isSelected
                       ? 'bg-primary-600 border-primary-500 text-white shadow-lg scale-[1.02]'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-750'
-                  } ${feedback !== 'none' ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                  }`}
                 >
                   <span
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
@@ -794,12 +837,11 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
                 <button
                   key={opt.num}
                   onClick={() => toggleAnswer(opt.num)}
-                  disabled={feedback !== 'none'}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium text-sm transition-all border-2 ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-full font-medium text-sm transition-all border-2 cursor-pointer ${
                     isSelected
                       ? 'bg-primary-600 border-primary-500 text-white shadow-lg scale-[1.02]'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-750'
-                  } ${feedback !== 'none' ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                  }`}
                 >
                   <span
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
@@ -821,7 +863,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
           <div className="flex gap-2 mt-1">
             <button
               onClick={handleCorriger}
-              disabled={feedback !== 'none' || selectedAnswers.length === 0}
+              disabled={selectedAnswers.length === 0}
               className="flex-1 py-2.5 bg-error-500/90 hover:bg-error-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
             >
               <RotateCcw className="w-4 h-4" />
@@ -829,7 +871,7 @@ export default function ExamScreen({ revisionMode = false, officialMode = false 
             </button>
             <button
               onClick={handleValider}
-              disabled={feedback !== 'none' || selectedAnswers.length === 0}
+              disabled={selectedAnswers.length === 0}
               className="flex-1 py-2.5 bg-success-500 hover:bg-success-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />

@@ -52,7 +52,7 @@ attemptsRoutes.post('/', requireStudent, async (c) => {
   const passScore = Number(srow.pass_score);
   const requiredQuestions = Number(srow.required_questions);
   const questionCount = Number(srow.question_count);
-  if (requiredQuestions > 0 && questionCount !== requiredQuestions) {
+  if (requiredQuestions > 0 && questionCount < requiredQuestions) {
     return c.json(
       { error: `السلسلة غير مكتملة (${questionCount}/${requiredQuestions} سؤال)` },
       400

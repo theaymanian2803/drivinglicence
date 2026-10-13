@@ -33,6 +33,10 @@ function StudentRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.role !== 'student') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   return <>{children}</>;
 }
 
@@ -53,7 +57,8 @@ function LandingOrSeries() {
   const isPublic = useSitePublic();
 
   if (loading || isPublic === null) return <LoadingScreen />;
-  if (user) return <SeriesSelection />;
+  if (user?.role === 'student') return <SeriesSelection />;
+  if (user) return <Navigate to="/admin/dashboard" replace />;
   if (isPublic) return <Landing />;
   return <Navigate to="/login" replace />;
 }
